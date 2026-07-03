@@ -1,0 +1,17 @@
+{
+  "name": "漢字の径 ― JLPT読みトレーニング",
+  "short_name": "漢字の径",
+  "description": "JLPT N5〜N1の漢字・熟語・短文の読みを四択で練習するアプリ",
+  "lang": "ja",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "./index.html",
+  "scope": "./",
+  "background_color": "#f5f1e6",
+  "theme_color": "#2b3a52",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

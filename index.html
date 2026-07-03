@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>漢字の径 ― JLPT読みトレーニング</title>
+<meta name="theme-color" content="#2b3a52">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="漢字の径">
+<style>
+/* ============================================================
+   漢字の径（かんじのみち） calm Japanese-stationery design
+   palette:
+     --ai      #2b3a52  藍  (deep indigo: text / frames)
+     --washi   #f5f1e6  和紙 (warm paper background)
+     --sumi    #3a3630  墨  (soft ink for body text)
+     --matsu   #4e7a5a  松葉 (correct green)
+     --shu     #b6493f  朱  (wrong red / timer alert)
+     --kin     #b9924a  金  (accents, high score)
+   ============================================================ */
+:root{
+  --ai:#2b3a52; --ai-2:#3d5273; --washi:#f5f1e6; --washi-2:#ece5d3;
+  --sumi:#3a3630; --matsu:#4e7a5a; --shu:#b6493f; --kin:#b9924a;
+  --serif:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP","MS PMincho",serif;
+  --sans:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans JP","Meiryo",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--sans); color:var(--sumi); background:#22293a;
+  display:flex; justify-content:center; overflow:hidden;
+}
+#app{
+  position:relative; width:100%; max-width:480px; height:100dvh;
+  background:var(--washi); overflow:hidden;
+  box-shadow:0 0 40px rgba(0,0,0,.45);
+}
+/* paper texture: faint horizontal fibers */
+#app::before{
+  content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    repeating-linear-gradient(0deg, rgba(43,58,82,.025) 0 1px, transparent 1px 7px),
+    radial-gradient(120% 90% at 50% 0%, rgba(185,146,74,.06), transparent 60%);
+}
+.screen{position:absolute; inset:0; display:none; flex-direction:column; z-index:1; overflow:hidden auto;}
+.screen.active{display:flex}
+button{font-family:var(--sans); cursor:pointer; border:none; background:none}
+
+/* ---------- start screen ---------- */
+#scr-start{align-items:center; text-align:center; padding:28px 22px; gap:0;}
+.brand-mark{
+  margin-top:5dvh; width:104px; height:104px; border-radius:50%;
+  border:2px solid var(--ai); display:flex; align-items:center; justify-content:center;
+  font-family:var(--serif); font-size:56px; color:var(--ai); position:relative;
+  background:radial-gradient(circle at 35% 30%, #fffdf5, var(--washi));
+}
+.brand-mark::after{ /* hanko-style seal dot */
+  content:"径"; position:absolute; right:-10px; bottom:-6px; width:34px; height:34px;
+  background:var(--shu); color:#fdf6ea; border-radius:7px; font-size:19px; font-family:var(--serif);
+  display:flex; align-items:center; justify-content:center; transform:rotate(6deg);
+  box-shadow:0 2px 5px rgba(0,0,0,.2);
+}
+h1.title{font-family:var(--serif); font-size:34px; letter-spacing:.14em; color:var(--ai); margin-top:20px; font-weight:600;}
+.subtitle{font-size:13px; letter-spacing:.28em; color:var(--ai-2); margin-top:8px;}
+.rule-line{width:56px; height:1px; background:var(--kin); margin:22px auto 18px;}
+.start-desc{font-size:13px; line-height:1.9; color:#6b6357; max-width:300px;}
+.level-list{display:flex; flex-direction:column; gap:11px; width:100%; max-width:320px; margin:26px auto 0;}
+.level-btn{
+  display:flex; align-items:center; gap:14px; width:100%;
+  padding:13px 18px; border:1.5px solid var(--ai); border-radius:12px;
+  background:#fffdf6; color:var(--ai); text-align:left;
+  transition:transform .12s ease, background .12s ease, box-shadow .12s;
+  box-shadow:0 1px 0 rgba(43,58,82,.18);
+}
+.level-btn:active{transform:scale(.97); background:var(--washi-2)}
+.level-badge{
+  font-family:var(--serif); font-size:21px; font-weight:700; width:52px; height:44px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--ai); color:#f2edda; border-radius:8px; letter-spacing:.02em; flex:none;
+}
+.level-btn .lv-name{font-size:15px; font-weight:600}
+.level-btn .lv-hint{font-size:11px; color:#8a8172; margin-top:2px}
+.sound-note{margin:22px 0 10px; font-size:11px; color:#9a9182; letter-spacing:.08em}
+
+/* ---------- quiz screen ---------- */
+#scr-quiz{padding:14px 16px 20px}
+.quiz-top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.q-level{font-family:var(--serif); font-weight:700; color:#f2edda; background:var(--ai); border-radius:6px; padding:3px 9px; font-size:13px}
+.q-progress{display:flex; gap:4px; flex:1; justify-content:center}
+.q-progress i{width:16px; height:5px; border-radius:3px; background:#d9d0bc; transition:background .2s}
+.q-progress i.done-ok{background:var(--matsu)}
+.q-progress i.done-ng{background:var(--shu)}
+.q-progress i.now{background:var(--ai)}
+.timer-wrap{position:relative; width:52px; height:52px; flex:none}
+.timer-wrap svg{transform:rotate(-90deg)}
+.timer-num{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ai)}
+.timer-num.alert{color:var(--shu); animation:tick .5s steps(2) infinite}
+@keyframes tick{50%{opacity:.35}}
+.q-category{
+  margin:16px auto 0; font-size:12px; letter-spacing:.35em; color:var(--ai-2);
+  border-top:1px solid var(--kin); border-bottom:1px solid var(--kin); padding:4px 16px 4px 20px;
+}
+.q-card{
+  margin:14px 4px 0; background:#fffdf6; border:1.5px solid var(--ai); border-radius:14px;
+  min-height:168px; display:flex; align-items:center; justify-content:center; text-align:center;
+  padding:18px 16px; position:relative; box-shadow:0 3px 0 rgba(43,58,82,.15);
+}
+.q-card::before,.q-card::after{ /* tanzaku corner marks */
+  content:""; position:absolute; width:14px; height:14px; border-color:var(--kin); border-style:solid;
+}
+.q-card::before{top:7px; left:7px; border-width:1.5px 0 0 1.5px}
+.q-card::after{bottom:7px; right:7px; border-width:0 1.5px 1.5px 0}
+.q-kanji{font-family:var(--serif); font-size:76px; color:var(--sumi); line-height:1}
+.q-jukugo{font-family:var(--serif); font-size:52px; color:var(--sumi); letter-spacing:.06em; line-height:1.15}
+.q-sentence{font-family:var(--serif); font-size:23px; line-height:1.85; color:var(--sumi); text-align:left}
+.q-sentence .target{color:var(--shu); border-bottom:2.5px solid var(--shu); padding-bottom:1px; font-weight:600}
+.q-ask{margin-top:14px; font-size:14.5px; font-weight:700; color:var(--ai); text-align:center; letter-spacing:.1em}
+.choices{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px}
+.choice-btn{
+  padding:15px 8px; border:1.5px solid var(--ai-2); border-radius:11px; background:#fffdf6;
+  font-size:18px; font-weight:800; color:#2e2a24; font-family:var(--sans); letter-spacing:.04em;
+  transition:transform .1s, background .1s; min-height:56px; box-shadow:0 2px 0 rgba(43,58,82,.12);
+}
+.choice-btn:active{transform:scale(.96); background:var(--washi-2)}
+.choice-btn:disabled{opacity:.55}
+.choice-btn .cnum{display:inline-block; font-size:11px; color:var(--kin); margin-right:6px; font-family:var(--sans)}
+
+/* ---------- judge screen ---------- */
+#scr-judge{padding:20px 18px 24px; align-items:center}
+.judge-mark{margin-top:3dvh; width:118px; height:118px; position:relative; animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{0%{transform:scale(.3); opacity:0}100%{transform:scale(1); opacity:1}}
+.judge-word{font-family:var(--serif); font-size:26px; font-weight:700; margin-top:12px; letter-spacing:.2em}
+.judge-word.ok{color:var(--matsu)} .judge-word.ng{color:var(--shu)}
+.judge-answer{margin-top:14px; font-size:15px; text-align:center; line-height:1.7}
+.judge-answer .ja-word{font-family:var(--serif); font-size:24px; font-weight:700; color:var(--ai)}
+.judge-answer .ja-read{font-size:18px; color:var(--shu); font-weight:700}
+.expl-box{
+  margin-top:16px; width:100%; background:#fffdf6; border:1px solid #d8cfb8; border-left:4px solid var(--kin);
+  border-radius:10px; padding:14px 16px; font-size:15px; font-weight:600; line-height:1.9; color:#3f3a31;
+}
+.expl-box .expl-label{font-size:11px; letter-spacing:.3em; color:var(--kin); display:block; margin-bottom:5px}
+.your-pick{margin-top:10px; font-size:12.5px; color:#8a8172}
+.next-btn{
+  margin-top:auto; margin-bottom:6px; width:100%; padding:16px; border-radius:12px;
+  background:var(--ai); color:#f2edda; font-size:16px; font-weight:700; letter-spacing:.15em;
+  box-shadow:0 3px 0 #1c2637; transition:transform .1s;
+}
+.next-btn:active{transform:translateY(2px)}
+
+/* ---------- result screen ---------- */
+#scr-result{padding:0}
+#result-bg{position:absolute; inset:0; z-index:0}
+#result-bg svg{width:100%; height:100%; display:block}
+#result-fx{position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden}
+.result-ui{position:relative; z-index:2; height:100%; display:flex; flex-direction:column; align-items:center; padding:22px 20px}
+.result-panel{
+  margin-top:4dvh; text-align:center; color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.55);
+}
+.result-level{font-size:14px; letter-spacing:.3em; opacity:.95}
+.result-score{font-family:var(--serif); font-size:74px; font-weight:700; line-height:1.05}
+.result-score small{font-size:26px; font-weight:600}
+.result-title{font-family:var(--serif); font-size:22px; letter-spacing:.12em; margin-top:6px}
+.result-msg{font-size:13px; margin-top:8px; line-height:1.8; opacity:.95}
+.result-btns{margin-top:auto; width:100%; display:flex; flex-direction:column; gap:10px; padding-bottom:8px}
+.r-btn{
+  width:100%; padding:15px; border-radius:12px; font-size:15px; font-weight:700; letter-spacing:.12em;
+  background:rgba(245,241,230,.94); color:var(--ai); box-shadow:0 3px 8px rgba(0,0,0,.3);
+  transition:transform .1s;
+}
+.r-btn:active{transform:scale(.97)}
+.r-btn.primary{background:var(--ai); color:#f2edda}
+
+/* ---------- end screen ---------- */
+#scr-end{align-items:center; justify-content:center; text-align:center; padding:30px}
+#scr-end .end-kanji{font-family:var(--serif); font-size:60px; color:var(--ai); letter-spacing:.1em}
+#scr-end p{margin-top:16px; font-size:14px; line-height:2; color:#6b6357}
+#scr-end .r-btn{max-width:260px; margin-top:28px; border:1.5px solid var(--ai)}
+
+
+/* ---------- top: 苦手挑戦・学習記録ボタン ---------- */
+.top-extra{display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px; margin:18px auto 0}
+.mode-btn{
+  width:100%; padding:12px 16px; border-radius:12px; background:#fffdf6;
+  border:1.5px solid var(--ai-2); color:var(--ai); font-size:14px; font-weight:700;
+  letter-spacing:.06em; box-shadow:0 1px 0 rgba(43,58,82,.18); transition:transform .12s;
+}
+.mode-btn:active{transform:scale(.97)}
+.mode-btn.weak{border-color:var(--shu); color:var(--shu)}
+.mode-btn.weak:disabled{opacity:.55}
+.mode-btn .mode-hint{display:block; font-size:11px; font-weight:600; color:#9a9182; margin-top:3px; letter-spacing:.02em}
+.q-level.weak{background:var(--shu)}
+/* ---------- 解説画面: 回答履歴 ---------- */
+.q-history{
+  margin-top:10px; width:100%; text-align:center; font-size:12.5px; font-weight:700;
+  color:#5a5348; background:rgba(43,58,82,.07); border-radius:8px; padding:9px 12px; letter-spacing:.04em;
+}
+.q-history .h-ok{color:var(--matsu)} .q-history .h-ng{color:var(--shu)}
+/* ---------- 学習記録画面 ---------- */
+#scr-records{padding:22px 18px}
+.rec-title{font-family:var(--serif); font-size:24px; color:var(--ai); letter-spacing:.2em; text-align:center; font-weight:700}
+.rec-sub{font-size:12px; color:#9a9182; text-align:center; margin-top:6px; letter-spacing:.08em}
+.rec-card{margin-top:14px; background:#fffdf6; border:1px solid #d8cfb8; border-radius:12px; padding:14px 16px}
+.rec-card h3{font-size:12px; letter-spacing:.3em; color:var(--kin); font-weight:700; margin-bottom:8px}
+.rec-total{display:flex; justify-content:space-around; text-align:center}
+.rec-total .num{font-family:var(--serif); font-size:26px; font-weight:700; color:var(--ai)}
+.rec-total .lbl{font-size:11px; color:#8a8172; margin-top:2px}
+.rec-row{display:flex; align-items:baseline; gap:10px; padding:7px 0; border-bottom:1px dashed #e2d9c4; font-size:13px}
+.rec-row:last-child{border-bottom:none}
+.rec-row .r-lv{font-family:var(--serif); font-weight:700; color:var(--ai); width:44px; flex:none}
+.rec-row .r-main{font-weight:700; color:#4a443a}
+.rec-row .r-recent{margin-left:auto; font-size:12px; color:#8a8172; letter-spacing:.05em}
+.rec-empty{font-size:13px; color:#8a8172; text-align:center; padding:8px 0}
+.weak-item{display:flex; align-items:baseline; gap:8px; padding:7px 0; border-bottom:1px dashed #e2d9c4; font-size:13.5px}
+.weak-item:last-child{border-bottom:none}
+.weak-item .w-word{font-family:var(--serif); font-size:17px; font-weight:700; color:var(--sumi)}
+.weak-item .w-read{color:var(--shu); font-weight:700}
+.weak-item .w-stat{margin-left:auto; font-size:12px; color:#8a8172}
+.rec-btns{margin-top:auto; padding-top:16px; display:flex; flex-direction:column; gap:10px}
+.rec-clear{width:100%; padding:12px; border-radius:10px; border:1.5px solid var(--shu); color:var(--shu); background:#fffdf6; font-size:13px; font-weight:700}
+.rec-back{width:100%; padding:14px; border-radius:12px; background:var(--ai); color:#f2edda; font-size:15px; font-weight:700; letter-spacing:.12em; box-shadow:0 3px 0 #1c2637}
+
+/* ---------- weather / effect layers ---------- */
+.rain-drop{position:absolute; top:-12%; width:1.5px; height:11vh; background:linear-gradient(rgba(190,205,225,0),rgba(190,205,225,.65)); animation:rainfall linear infinite}
+@keyframes rainfall{to{transform:translateY(125vh)}}
+.fog-band{position:absolute; width:160%; height:15vh; background:radial-gradient(ellipse at center, rgba(215,218,224,.4), transparent 70%); filter:blur(6px); animation:fogdrift linear infinite alternate}
+@keyframes fogdrift{from{transform:translateX(-14%)}to{transform:translateX(4%)}}
+.confetti-p{position:absolute; top:-6%; width:9px; height:13px; opacity:.95; animation:confall linear infinite}
+@keyframes confall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(115vh) rotate(720deg)}}
+.sparkle{position:absolute; color:#ffe9a8; animation:spark ease-in-out infinite; font-size:16px}
+@keyframes spark{0%,100%{opacity:0; transform:scale(.4)}50%{opacity:1; transform:scale(1.15)}}
+.ray-spin{transform-origin:center; animation:rayrot 26s linear infinite}
+@keyframes rayrot{to{transform:rotate(360deg)}}
+.crow-fly{position:absolute; animation:crowmove linear infinite}
+@keyframes crowmove{from{transform:translateX(-15vw)}to{transform:translateX(115vw)}}
+.fw-shell{position:absolute; width:4px; height:4px; border-radius:50%}
+.crown-drop{position:absolute; left:50%; animation:crowndown 2.2s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes crowndown{0%{transform:translate(-50%,-30vh) scale(.5); opacity:0}60%{opacity:1}100%{transform:translate(-50%,0) scale(1); opacity:1}}
+.spotlight-beam{position:absolute; top:-5%; width:26vw; height:70vh; background:linear-gradient(rgba(255,255,220,.5), transparent); clip-path:polygon(42% 0,58% 0,100% 100%,0 100%); transform-origin:top center; animation:swing 5s ease-in-out infinite alternate; mix-blend-mode:screen}
+@keyframes swing{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+@media (prefers-reduced-motion:reduce){
+  .rain-drop,.fog-band,.confetti-p,.sparkle,.ray-spin,.crow-fly,.spotlight-beam{animation:none !important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- START -->
+  <section class="screen active" id="scr-start">
+    <div class="brand-mark">漢</div>
+    <h1 class="title">漢字の径</h1>
+    <div class="subtitle">JLPT 読みトレーニング</div>
+    <div class="rule-line"></div>
+    <p class="start-desc">漢字・熟語・短文の読みを四択で答える練習帳。<br>1セット10問、制限時間は各15秒。</p>
+    <div class="level-list" id="level-list"></div>
+    <div class="top-extra">
+      <button class="mode-btn weak" id="btn-weak">苦手問題に挑戦</button>
+      <button class="mode-btn" id="btn-records">学習記録を見る</button>
+    </div>
+    <p class="sound-note">♪ 音が出ます（BGM・効果音）</p>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="scr-quiz">
+    <div class="quiz-top">
+      <span class="q-level" id="q-level">N5</span>
+      <div class="q-progress" id="q-progress"></div>
+      <div class="timer-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#ddd4bf" stroke-width="5"/>
+          <circle id="timer-ring" cx="26" cy="26" r="22" fill="none" stroke="#2b3a52" stroke-width="5"
+                  stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timer-num">15</div>
+      </div>
+    </div>
+    <div class="q-category" id="q-category">漢 字</div>
+    <div class="q-card" id="q-card"></div>
+    <div class="q-ask" id="q-ask">読み方はどれ？</div>
+    <div class="choices" id="choices"></div>
+  </section>
+
+  <!-- JUDGE -->
+  <section class="screen" id="scr-judge">
+    <div class="judge-mark" id="judge-mark"></div>
+    <div class="judge-word" id="judge-word"></div>
+    <div class="judge-answer" id="judge-answer"></div>
+    <div class="expl-box"><span class="expl-label">解 説</span><span id="expl-text"></span></div>
+    <div class="your-pick" id="your-pick"></div>
+    <div class="q-history" id="q-history"></div>
+    <button class="next-btn" id="next-btn">次の問題へ</button>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="scr-result">
+    <div id="result-bg"></div>
+    <div id="result-fx"></div>
+    <div class="result-ui">
+      <div class="result-panel">
+        <div class="result-level" id="r-level">N5 の結果</div>
+        <div class="result-score"><span id="r-score">0</span><small> / 10点</small></div>
+        <div class="result-title" id="r-title"></div>
+        <div class="result-msg" id="r-msg"></div>
+      </div>
+      <div class="result-btns">
+        <button class="r-btn primary" id="btn-retry">リトライ（同じレベルに再挑戦）</button>
+        <button class="r-btn" id="btn-top">トップに戻る</button>
+        <button class="r-btn" id="btn-quit">終了する</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECORDS -->
+  <section class="screen" id="scr-records">
+    <div class="rec-title">学習記録</div>
+    <div class="rec-sub">この端末のブラウザに保存されます</div>
+    <div id="rec-body"></div>
+    <div class="rec-btns">
+      <button class="rec-clear" id="btn-clear">記録をすべて消去する</button>
+      <button class="rec-back" id="btn-rec-back">トップに戻る</button>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section class="screen" id="scr-end">
+    <div class="end-kanji">終</div>
+    <p>お疲れさまでした。<br>継続は力なり ― またの挑戦をお待ちしています。</p>
+    <button class="r-btn" id="btn-restart">もう一度はじめる</button>
+  </section>
+
+</div>
+<script>
+"use strict";
+/* ============================================================
+   問題データ
+   基本バンク（各レベル 漢字10・熟語10・短文6）。下の EXTRA と合わせて
+   現在 各レベル 漢字30・熟語40・短文20 を収録。目標の100/150/60へは
+   EXTRA に同じ形式で追記してください。
+   c: 選択肢4つ（読み方が似ているもの） a: 正解のindex e: 解説
+   ============================================================ */
+const DATA = {
+N5:{
+kanji:[
+{q:"山",c:["やま","まや","はま","やみ"],a:0,e:"「山」は やま（mountain）。音読みは「サン」（富士山＝ふじさん）。"},
+{q:"川",c:["かわ","こわ","かま","きわ"],a:0,e:"「川」は かわ（river）。「〜がわ」と濁ることもあります（多摩川＝たまがわ）。"},
+{q:"水",c:["みず","みす","むず","みつ"],a:0,e:"「水」は みず（water）。音読みは「スイ」（水曜日＝すいようび）。"},
+{q:"空",c:["そら","さら","すら","そろ"],a:0,e:"「空」は そら（sky）。「くう」とも読みます（空港＝くうこう）。"},
+{q:"白",c:["しろ","しる","じろ","しら"],a:0,e:"「白」は しろ（white）。「しら」は複合語で使います（白髪＝しらが）。"},
+{q:"花",c:["はな","ばな","はね","ほな"],a:0,e:"「花」は はな（flower）。「鼻（はな）」と同じ音なので文脈で区別します。"},
+{q:"犬",c:["いぬ","いね","うぬ","いの"],a:0,e:"「犬」は いぬ（dog）。「稲（いね）」と形も音も混同しやすいので注意。"},
+{q:"魚",c:["さかな","さがな","さかや","たかな"],a:0,e:"「魚」は さかな（fish）。「魚屋＝さかなや」。音読みは「ギョ」（金魚＝きんぎょ）。"},
+{q:"雨",c:["あめ","あま","あね","うめ"],a:0,e:"「雨」は あめ（rain）。複合語では「あま」（雨戸＝あまど）になることも。"},
+{q:"駅",c:["えき","いき","えぎ","せき"],a:0,e:"「駅」は えき（station）。「東京駅＝とうきょうえき」。濁らないことに注意。"}
+],
+jukugo:[
+{q:"学校",c:["がっこう","がっこ","かっこう","がくこう"],a:0,e:"学校＝がっこう（school）。「学（がく）＋校（こう）」で「っ」に変化する促音便。"},
+{q:"先生",c:["せんせい","せんせ","ぜんせい","せんぜい"],a:0,e:"先生＝せんせい（teacher）。最後の「い」は長音として伸ばします。"},
+{q:"電話",c:["でんわ","てんわ","でんは","だんわ"],a:0,e:"電話＝でんわ（telephone）。「電（でん）」は電気・電車にも使われます。"},
+{q:"毎日",c:["まいにち","まいひ","まえにち","まいじつ"],a:0,e:"毎日＝まいにち（every day）。「日」をここでは「にち」と読みます。"},
+{q:"時間",c:["じかん","しかん","じがん","じけん"],a:0,e:"時間＝じかん（time）。「事件（じけん）」と混同しないように。"},
+{q:"天気",c:["てんき","でんき","てんぎ","てんけ"],a:0,e:"天気＝てんき（weather）。「電気（でんき）」と一音違いです。"},
+{q:"買い物",c:["かいもの","がいもの","かいぶつ","けいもの"],a:0,e:"買い物＝かいもの（shopping）。「買う（かう）」＋「物（もの）」。"},
+{q:"図書館",c:["としょかん","ずしょかん","としょがん","とうしょかん"],a:0,e:"図書館＝としょかん（library）。「図」はここでは「と」と読みます。"},
+{q:"料理",c:["りょうり","りょり","りゅうり","ろうり"],a:0,e:"料理＝りょうり（cooking）。「りょう」と「り」、拗音と長音に注意。"},
+{q:"新聞",c:["しんぶん","しんもん","にいぶん","しんぷん"],a:0,e:"新聞＝しんぶん（newspaper）。「聞」は「ぶん」と濁ります。"}
+],
+bun:[
+{s:"【今日】は いい 天気です。",c:["きょう","こんにち","いまび","きゅう"],a:0,e:"今日＝きょう（today）。特別な読み方（熟字訓）です。「こんにち」はあいさつ「こんにちは」で使います。"},
+{s:"あした 友だちに 【会います】。",c:["あいます","かいます","えいます","おいます"],a:0,e:"会う＝あう（to meet）。「買います（かいます）」と混同しやすい形です。"},
+{s:"この 【本】を 読んで ください。",c:["ほん","ぼん","もと","はん"],a:0,e:"本＝ほん（book）。「〜ぼん・ぽん」と濁るのは数える時（三本＝さんぼん）。"},
+{s:"【来週】、日本へ 行きます。",c:["らいしゅう","らいしゅ","きしゅう","こしゅう"],a:0,e:"来週＝らいしゅう（next week）。「来月＝らいげつ」「来年＝らいねん」もセットで覚えましょう。"},
+{s:"つぎの かどを 【左】に まがって ください。",c:["ひだり","ひたり","ひだい","しだり"],a:0,e:"左＝ひだり（left）。反対は「右（みぎ）」。濁点の位置に注意。"},
+{s:"まいあさ パンを 【食べます】。",c:["たべます","だべます","しべます","くべます"],a:0,e:"食べる＝たべる（to eat）。「食」は音読みで「しょく」（食事＝しょくじ）。"}
+]},
+N4:{
+kanji:[
+{q:"春",c:["はる","ばる","はろ","ひる"],a:0,e:"春＝はる（spring）。「昼（ひる）」と一音違い。音読みは「シュン」。"},
+{q:"夏",c:["なつ","なす","なづ","のつ"],a:0,e:"夏＝なつ（summer）。「夏休み＝なつやすみ」。音読みは「カ」（夏期）。"},
+{q:"秋",c:["あき","あぎ","おき","あけ"],a:0,e:"秋＝あき（autumn）。「開き（あき）」「空き（あき）」と同音です。"},
+{q:"冬",c:["ふゆ","ふよ","ぶゆ","ふう"],a:0,e:"冬＝ふゆ（winter）。音読みは「トウ」（冬季＝とうき）。"},
+{q:"力",c:["ちから","じから","ちがら","ちかろ"],a:0,e:"力＝ちから（power）。音読みは「リョク・リキ」（努力＝どりょく）。"},
+{q:"声",c:["こえ","ごえ","こい","こわ"],a:0,e:"声＝こえ（voice）。複合語では「ごえ」（歌声＝うたごえ）。"},
+{q:"夜",c:["よる","よろ","やる","よう"],a:0,e:"夜＝よる（night）。「や」とも読みます（今夜＝こんや）。"},
+{q:"池",c:["いけ","いげ","いき","いか"],a:0,e:"池＝いけ（pond）。音読みは「チ」（電池＝でんち）。"},
+{q:"顔",c:["かお","がお","かほ","こお"],a:0,e:"顔＝かお（face）。複合語では「がお」（笑顔＝えがお）。"},
+{q:"紙",c:["かみ","がみ","かめ","かひ"],a:0,e:"紙＝かみ（paper）。「神（かみ）」「髪（かみ）」と同音。手紙＝てがみ。"}
+],
+jukugo:[
+{q:"病院",c:["びょういん","びょいん","ひょういん","びょうにん"],a:0,e:"病院＝びょういん（hospital）。「びよういん（美容院）」と長音の位置がちがいます。"},
+{q:"運転",c:["うんてん","うんでん","うんてい","うてん"],a:0,e:"運転＝うんてん（driving）。「運転手＝うんてんしゅ」。"},
+{q:"説明",c:["せつめい","せいめい","せつめ","せづめい"],a:0,e:"説明＝せつめい（explanation）。「生命（せいめい）」と混同しないように。"},
+{q:"世界",c:["せかい","せいかい","せがい","せけい"],a:0,e:"世界＝せかい（world）。「正解（せいかい）」は別の言葉です。"},
+{q:"台風",c:["たいふう","だいふう","たいふ","たいかぜ"],a:0,e:"台風＝たいふう（typhoon）。「風」はここでは「ふう」。"},
+{q:"経験",c:["けいけん","けいげん","きょうけん","けけん"],a:0,e:"経験＝けいけん（experience）。「経」は経済（けいざい）でも「けい」。"},
+{q:"案内",c:["あんない","あんうち","あない","あんだい"],a:0,e:"案内＝あんない（guidance）。「内」はここでは「ない」と読みます。"},
+{q:"準備",c:["じゅんび","じゅんぴ","しゅんび","じゅび"],a:0,e:"準備＝じゅんび（preparation）。「備」は「び」と濁ります。"},
+{q:"招待",c:["しょうたい","しょうだい","しょたい","そうたい"],a:0,e:"招待＝しょうたい（invitation）。「正体（しょうたい）」と同音です。"},
+{q:"屋上",c:["おくじょう","やじょう","おくうえ","おくじょ"],a:0,e:"屋上＝おくじょう（rooftop）。「屋」は音読みで「おく」。"}
+],
+bun:[
+{s:"電車が【急に】止まりました。",c:["きゅうに","きゅに","くうに","ぎゅうに"],a:0,e:"急に＝きゅうに（suddenly）。「急ぐ＝いそぐ」の訓読みもあわせて覚えましょう。"},
+{s:"【将来】、医者になりたいです。",c:["しょうらい","しょらい","そうらい","しょうれい"],a:0,e:"将来＝しょうらい（future）。長音「しょう」を短く読まないように。"},
+{s:"この荷物を【送って】ください。",c:["おくって","そうって","おこって","おくうて"],a:0,e:"送る＝おくる（to send）。「怒って（おこって）」と一音違いです。"},
+{s:"もっと【自由】な時間がほしいです。",c:["じゆう","じゆ","しゆう","じゅう"],a:0,e:"自由＝じゆう（freedom）。「じゅう（十）」と発音が似ているので注意。"},
+{s:"会議の【途中】で電話が鳴りました。",c:["とちゅう","とっちゅう","どちゅう","とじゅう"],a:0,e:"途中＝とちゅう（on the way / midway）。促音「っ」は入りません。"},
+{s:"この道は夜になると【危ない】です。",c:["あぶない","あばない","あぶまい","やぶない"],a:0,e:"危ない＝あぶない（dangerous）。名詞は「危険（きけん）」。"}
+]},
+N3:{
+kanji:[
+{q:"涙",c:["なみだ","なめだ","なみた","みなだ"],a:0,e:"涙＝なみだ（tears）。音読みは「ルイ」（感涙）。"},
+{q:"岸",c:["きし","ぎし","きじ","かし"],a:0,e:"岸＝きし（shore）。「海岸＝かいがん」では「がん」。"},
+{q:"汗",c:["あせ","あぜ","かせ","あし"],a:0,e:"汗＝あせ（sweat）。「汗をかく」という言い方で使います。"},
+{q:"骨",c:["ほね","ぼね","ほな","こね"],a:0,e:"骨＝ほね（bone）。音読みは「コツ」（骨折＝こっせつ）。"},
+{q:"岩",c:["いわ","いば","えわ","いが"],a:0,e:"岩＝いわ（rock）。音読みは「ガン」（岩石＝がんせき）。"},
+{q:"袋",c:["ふくろ","ふくろう","ぶくろ","ふぐろ"],a:0,e:"袋＝ふくろ（bag）。「ふくろう」は鳥の名前。複合語では「ぶくろ」（手袋＝てぶくろ）。"},
+{q:"隅",c:["すみ","ずみ","すま","くま"],a:0,e:"隅＝すみ（corner）。「部屋の隅」。「炭（すみ）」と同音です。"},
+{q:"塩",c:["しお","じお","しほ","せお"],a:0,e:"塩＝しお（salt）。音読みは「エン」（塩分＝えんぶん）。"},
+{q:"命",c:["いのち","いのぢ","いもち","いのし"],a:0,e:"命＝いのち（life）。音読みは「メイ」（生命＝せいめい）。"},
+{q:"底",c:["そこ","そご","すこ","そか"],a:0,e:"底＝そこ（bottom）。指示語の「そこ（there）」と同音です。"}
+],
+jukugo:[
+{q:"環境",c:["かんきょう","かんきょ","がんきょう","かんぎょう"],a:0,e:"環境＝かんきょう（environment）。「境」は「きょう」と読みます。"},
+{q:"情報",c:["じょうほう","じょうほ","しょうほう","じょほう"],a:0,e:"情報＝じょうほう（information）。二つの長音を両方きちんと伸ばします。"},
+{q:"影響",c:["えいきょう","えいきょ","えきょう","えいぎょう"],a:0,e:"影響＝えいきょう（influence）。「営業（えいぎょう）」と混同しやすい形。"},
+{q:"面接",c:["めんせつ","めんせち","めんぜつ","めせつ"],a:0,e:"面接＝めんせつ（interview）。就職活動で必須の言葉です。"},
+{q:"貿易",c:["ぼうえき","ぼえき","ぼうやく","もうえき"],a:0,e:"貿易＝ぼうえき（trade）。「易」はここでは「えき」（簡易＝かんい とは別の読み）。"},
+{q:"節約",c:["せつやく","せちやく","せつよく","ぜつやく"],a:0,e:"節約＝せつやく（saving / economizing）。「予約（よやく）」の「やく」と同じ字です。"},
+{q:"迷惑",c:["めいわく","めわく","まいわく","めいかく"],a:0,e:"迷惑＝めいわく（trouble / nuisance）。「迷惑をかける」で使います。"},
+{q:"我慢",c:["がまん","かまん","がめん","ごまん"],a:0,e:"我慢＝がまん（patience / endurance）。「画面（がめん）」と混同注意。"},
+{q:"募集",c:["ぼしゅう","ぼしゅ","もしゅう","ぼじゅう"],a:0,e:"募集＝ぼしゅう（recruitment）。アルバイト情報でよく見る言葉です。"},
+{q:"疲労",c:["ひろう","ひろ","つかろう","びろう"],a:0,e:"疲労＝ひろう（fatigue）。訓読みは「疲れる（つかれる）」。"}
+],
+bun:[
+{s:"彼の意見に【賛成】です。",c:["さんせい","さんぜい","ざんせい","さんせ"],a:0,e:"賛成＝さんせい（agreement）。反対語は「反対（はんたい）」。"},
+{s:"会議の資料を【確認】してください。",c:["かくにん","かくじん","がくにん","かくいん"],a:0,e:"確認＝かくにん（confirmation）。ビジネスで最頻出の言葉のひとつです。"},
+{s:"事故で電車が【遅れて】います。",c:["おくれて","おそれて","おぐれて","ちれて"],a:0,e:"遅れる＝おくれる（to be late）。形容詞は「遅い（おそい）」、「恐れる（おそれる）」は別の言葉。"},
+{s:"これはとても【複雑】な問題です。",c:["ふくざつ","ふくさつ","ふぐざつ","ふくざち"],a:0,e:"複雑＝ふくざつ（complicated）。反対語は「単純（たんじゅん）」。"},
+{s:"落ちているゴミを【拾って】ください。",c:["ひろって","しろって","ひらって","ひろて"],a:0,e:"拾う＝ひろう（to pick up）。反対語は「捨てる（すてる）」。"},
+{s:"新しい仕事にやっと【慣れました】。",c:["なれました","ねれました","なめました","かれました"],a:0,e:"慣れる＝なれる（to get used to）。「慣れ」は名詞としても使います。"}
+]},
+N2:{
+kanji:[
+{q:"幅",c:["はば","はぶ","ばば","ほば"],a:0,e:"幅＝はば（width）。「幅が広い」。音読みは「フク」（振幅）。"},
+{q:"峠",c:["とうげ","とうけ","どうげ","とげ"],a:0,e:"峠＝とうげ（mountain pass）。日本で作られた国字です。「棘（とげ）」と混同注意。"},
+{q:"沼",c:["ぬま","ぬば","のま","ぬめ"],a:0,e:"沼＝ぬま（swamp / marsh）。「湖（みずうみ）」より浅い水域を指します。"},
+{q:"灰",c:["はい","ばい","はえ","かい"],a:0,e:"灰＝はい（ash）。「灰色＝はいいろ（gray）」。返事の「はい」と同音。"},
+{q:"溝",c:["みぞ","みそ","みず","むぞ"],a:0,e:"溝＝みぞ（ditch / gap）。「味噌（みそ）」と濁点一つの差です。"},
+{q:"綱",c:["つな","つた","づな","つの"],a:0,e:"綱＝つな（rope）。「綱引き＝つなひき」。「角（つの）」「蔦（つた）」と区別。"},
+{q:"稲",c:["いね","いな","いぬ","えね"],a:0,e:"稲＝いね（rice plant）。複合語では「いな」（稲妻＝いなずま）。"},
+{q:"泡",c:["あわ","あは","あば","おわ"],a:0,e:"泡＝あわ（bubble / foam）。「泡が立つ」。音読みは「ホウ」（気泡）。"},
+{q:"霧",c:["きり","ぎり","きい","むり"],a:0,e:"霧＝きり（fog）。「霧が出る」。「無理（むり）」と混同しないように。"},
+{q:"潮",c:["しお","じお","しよ","すお"],a:0,e:"潮＝しお（tide）。「塩（しお）」と同音ですが意味が異なります。"}
+],
+jukugo:[
+{q:"矛盾",c:["むじゅん","むじゅ","ぼじゅん","むしゅん"],a:0,e:"矛盾＝むじゅん（contradiction）。「矛（ほこ）と盾（たて）」の故事に由来します。"},
+{q:"妥協",c:["だきょう","たきょう","だきょ","だぎょう"],a:0,e:"妥協＝だきょう（compromise）。「妥協点を探す」のように使います。"},
+{q:"把握",c:["はあく","はく","ばあく","はおく"],a:0,e:"把握＝はあく（grasp / understanding）。「状況を把握する」。"},
+{q:"貢献",c:["こうけん","こうげん","くけん","こけん"],a:0,e:"貢献＝こうけん（contribution）。「社会に貢献する」。「高原（こうげん）」と混同注意。"},
+{q:"曖昧",c:["あいまい","あいめい","あまい","あいばい"],a:0,e:"曖昧＝あいまい（vague / ambiguous）。「甘い（あまい）」と区別しましょう。"},
+{q:"頻繁",c:["ひんぱん","ひんばん","ひんぱ","びんぱん"],a:0,e:"頻繁＝ひんぱん（frequent）。半濁音「ぱん」に注意。"},
+{q:"融通",c:["ゆうずう","ゆうつう","ゆずう","ゆうづ"],a:0,e:"融通＝ゆうずう（flexibility）。「融通が利く」。「通」を「ずう」と読む特殊な例。"},
+{q:"拍子",c:["ひょうし","はくし","びょうし","ひょうじ"],a:0,e:"拍子＝ひょうし（rhythm / beat）。「拍手（はくしゅ）」とは読みが変わります。"},
+{q:"為替",c:["かわせ","かわがえ","かせ","かわぜ"],a:0,e:"為替＝かわせ（exchange / money order）。熟字訓の特別な読みです。"},
+{q:"名残",c:["なごり","なこり","なごろ","ながり"],a:0,e:"名残＝なごり（remnants / lingering traces）。「名残惜しい」で使います。"}
+],
+bun:[
+{s:"彼は今年、【著しい】成長を見せた。",c:["いちじるしい","ちょじるしい","いちしるしい","いじるしい"],a:0,e:"著しい＝いちじるしい（remarkable）。「著者（ちょしゃ）」の音読みと混同しやすい語。"},
+{s:"新しい案を【検討】する。",c:["けんとう","けんどう","けんと","げんとう"],a:0,e:"検討＝けんとう（examination / consideration）。「見当（けんとう）」は同音異義語。"},
+{s:"費用は会社が【負担】する。",c:["ふたん","ぶたん","ふだん","ふたい"],a:0,e:"負担＝ふたん（burden）。「普段（ふだん）」と濁点の位置がちがいます。"},
+{s:"この国は資源が【乏しい】。",c:["とぼしい","とばしい","ともしい","どぼしい"],a:0,e:"乏しい＝とぼしい（scarce）。「貧乏（びんぼう）」の「乏」です。"},
+{s:"【穏やか】な天気が続いている。",c:["おだやか","おたやか","おだやが","おどやか"],a:0,e:"穏やか＝おだやか（calm / gentle）。「平穏（へいおん）」の「穏」です。"},
+{s:"警察が事故の原因を【探って】いる。",c:["さぐって","さがって","さくって","すぐって"],a:0,e:"探る＝さぐる（to probe / investigate）。「探す（さがす）」とは活用がちがいます。"}
+]},
+N1:{
+kanji:[
+{q:"麓",c:["ふもと","ふむと","ほもと","ふもど"],a:0,e:"麓＝ふもと（foot of a mountain）。「山の麓」。音読みは「ロク」（山麓）。"},
+{q:"暁",c:["あかつき","あかづき","あきつか","あかつぎ"],a:0,e:"暁＝あかつき（dawn / daybreak）。「成功の暁には」という慣用表現でも使います。"},
+{q:"鶴",c:["つる","づる","つり","つろ"],a:0,e:"鶴＝つる（crane）。「鶴は千年、亀は万年」。「釣り（つり）」と区別。"},
+{q:"瞳",c:["ひとみ","ひどみ","ひとめ","ふとみ"],a:0,e:"瞳＝ひとみ（pupil / eyes）。「人目（ひとめ）」と混同しないように。"},
+{q:"炎",c:["ほのお","ほのう","ほなお","ぼのお"],a:0,e:"炎＝ほのお（flame）。音読みは「エン」（炎症＝えんしょう）。"},
+{q:"鎖",c:["くさり","ぐさり","くさい","くざり"],a:0,e:"鎖＝くさり（chain）。音読みは「サ」（閉鎖＝へいさ、鎖国＝さこく）。"},
+{q:"滝",c:["たき","だき","たぎ","たけ"],a:0,e:"滝＝たき（waterfall）。「竹（たけ）」「炊き（たき）」と区別しましょう。"},
+{q:"錦",c:["にしき","にしぎ","にしけ","みしき"],a:0,e:"錦＝にしき（brocade）。「故郷に錦を飾る」という慣用句があります。"},
+{q:"蕾",c:["つぼみ","つぼめ","つほみ","づぼみ"],a:0,e:"蕾＝つぼみ（flower bud）。「桜の蕾がふくらむ」。"},
+{q:"雫",c:["しずく","しすく","じずく","しずこ"],a:0,e:"雫＝しずく（drop of water）。「滴」とも書きます。"}
+],
+jukugo:[
+{q:"顕著",c:["けんちょ","けんちょう","げんちょ","けんしょ"],a:0,e:"顕著＝けんちょ（notable / striking）。「けんちょう（県庁）」と伸ばさないのがポイント。"},
+{q:"語彙",c:["ごい","ごえ","ごひ","こい"],a:0,e:"語彙＝ごい（vocabulary）。「語彙力」。「恋（こい）」「声（こえ）」と混同注意。"},
+{q:"均衡",c:["きんこう","きんごう","ぎんこう","きんこ"],a:0,e:"均衡＝きんこう（equilibrium / balance）。「銀行（ぎんこう）」と一音違いです。"},
+{q:"罷免",c:["ひめん","びめん","ひべん","はめん"],a:0,e:"罷免＝ひめん（dismissal from office）。ニュースで使われる硬い言葉です。"},
+{q:"進捗",c:["しんちょく","しんちょ","しんしょく","じんちょく"],a:0,e:"進捗＝しんちょく（progress）。「進捗状況」。ビジネス頻出語です。"},
+{q:"破綻",c:["はたん","ばたん","はだん","はじょう"],a:0,e:"破綻＝はたん（collapse / failure）。「経営破綻」。「破談（はだん）」は別の言葉。"},
+{q:"示唆",c:["しさ","じさ","しざ","しさつ"],a:0,e:"示唆＝しさ（suggestion / implication）。「示唆に富む」。「視察（しさつ）」と区別。"},
+{q:"憂鬱",c:["ゆううつ","ゆうつ","ゆううち","ようつ"],a:0,e:"憂鬱＝ゆううつ（depression / gloom）。「ゆう」＋「うつ」で母音が続きます。"},
+{q:"完璧",c:["かんぺき","かんへき","かんべき","がんぺき"],a:0,e:"完璧＝かんぺき（perfect）。半濁音「ぺき」。「岸壁（がんぺき）」は別の言葉です。"},
+{q:"風情",c:["ふぜい","ふうぜい","ふせい","ふうじょう"],a:0,e:"風情＝ふぜい（charm / elegance）。「風」を「ふ」と短く読む特殊な読みです。"}
+],
+bun:[
+{s:"資金不足で計画が【滞って】いる。",c:["とどこおって","とどこって","とどおって","とこおって"],a:0,e:"滞る＝とどこおる（to be delayed / stagnate）。「滞在（たいざい）」の「滞」です。"},
+{s:"大臣の発言が物議を【醸した】。",c:["かもした","じょうした","かました","かもだした"],a:0,e:"醸す＝かもす（to give rise to / brew）。「物議を醸す」は決まった言い回しです。"},
+{s:"アルバイトで生活費を【賄う】。",c:["まかなう","まかのう","まがなう","あきなう"],a:0,e:"賄う＝まかなう(to cover expenses)。「商う（あきなう）」は別の動詞です。"},
+{s:"【厳か】な雰囲気の中で式典が行われた。",c:["おごそか","おこそか","おごさか","おごそが"],a:0,e:"厳か＝おごそか（solemn）。「厳しい（きびしい）」「厳密（げんみつ）」と読み分けます。"},
+{s:"両国の交渉は【円滑】に進んだ。",c:["えんかつ","えんがつ","えんかち","えんこつ"],a:0,e:"円滑＝えんかつ（smooth）。「滑」は「滑る（すべる）」の字です。"},
+{s:"政府は早急に事態の【収拾】を図った。",c:["しゅうしゅう","しゅうじゅう","しゅしゅう","しゅうしゅ"],a:0,e:"収拾＝しゅうしゅう（settlement / control）。「収集（しゅうしゅう・collecting）」と同音異義語です。"}
+]}
+};
+const LEVEL_INFO={
+ N5:"ひらがな・基本の漢字 約100字", N4:"日常生活の漢字 約300字",
+ N3:"日常場面を広くカバー 約650字", N2:"新聞・仕事の漢字 約1000字", N1:"高度な語彙と慣用表現 約2000字"};
+/* ============================================================
+   追加問題バンク（既存DATAへマージ）
+   現在の収録数：各レベル 漢字30・熟語40・短文20（計450問）
+   目標の 漢字100・熟語150・短文60 へは、この EXTRA に
+   同じ形式で追記していけば自動的に出題対象になります。
+   ============================================================ */
+const EXTRA = {
+N5:{
+kanji:[
+{q:"木",c:["き","ぎ","こ","け"],a:0,e:"木＝き（tree / wood）。音読みは「モク・ボク」（木曜日＝もくようび）。"},
+{q:"月",c:["つき","づき","つぎ","すき"],a:0,e:"月＝つき（moon / month）。「次（つぎ）」「好き（すき）」と混同注意。"},
+{q:"日",c:["ひ","び","ふ","は"],a:0,e:"日＝ひ（sun / day）。複合語では「び」（誕生日＝たんじょうび）。"},
+{q:"金",c:["かね","がね","かめ","きね"],a:0,e:"金＝かね（money / metal）。「お金＝おかね」。音読みは「キン」（金曜日）。"},
+{q:"土",c:["つち","づち","つじ","うち"],a:0,e:"土＝つち（soil / earth）。音読みは「ド」（土曜日＝どようび）。"},
+{q:"人",c:["ひと","びと","ひど","ふと"],a:0,e:"人＝ひと（person）。複合語では「びと」（恋人＝こいびと）。"},
+{q:"手",c:["て","で","た","ち"],a:0,e:"手＝て（hand）。「手紙＝てがみ」。音読みは「シュ」（握手＝あくしゅ）。"},
+{q:"足",c:["あし","あじ","おし","あせ"],a:0,e:"足＝あし（foot / leg）。「味（あじ）」「汗（あせ）」と一音違いです。"},
+{q:"目",c:["め","べ","ま","も"],a:0,e:"目＝め（eye）。「目玉＝めだま」。音読みは「モク」（目的＝もくてき）。"},
+{q:"耳",c:["みみ","みび","みめ","むみ"],a:0,e:"耳＝みみ（ear）。同じ音を二回くり返す読みです。"},
+{q:"口",c:["くち","ぐち","くじ","こち"],a:0,e:"口＝くち（mouth）。複合語では「ぐち」（入り口＝いりぐち）。"},
+{q:"車",c:["くるま","ぐるま","くろま","くるば"],a:0,e:"車＝くるま（car）。音読みは「シャ」（電車＝でんしゃ）。"},
+{q:"門",c:["もん","まん","ぼん","もの"],a:0,e:"門＝もん（gate）。「専門＝せんもん」「校門＝こうもん」。"},
+{q:"店",c:["みせ","みぜ","むせ","みそ"],a:0,e:"店＝みせ（shop）。音読みは「テン」（喫茶店＝きっさてん）。"},
+{q:"道",c:["みち","むち","まち","みじ"],a:0,e:"道＝みち（road）。「町（まち）」と一音違い。音読みは「ドウ」（道路）。"},
+{q:"海",c:["うみ","うび","おみ","うま"],a:0,e:"海＝うみ（sea）。「馬（うま）」と混同注意。音読みは「カイ」（海外）。"},
+{q:"天",c:["てん","でん","たん","とん"],a:0,e:"天＝てん（sky / heaven）。「天気＝てんき」。「電（でん）」と区別。"},
+{q:"上",c:["うえ","うへ","うい","うわ"],a:0,e:"上＝うえ（up / above）。「うわ」は複合語で使います（上着＝うわぎ）。"},
+{q:"下",c:["した","しだ","すた","しと"],a:0,e:"下＝した（down / below）。「靴下＝くつした」。読みが多い漢字の代表です。"},
+{q:"中",c:["なか","なが","まか","ぬか"],a:0,e:"中＝なか（inside / middle）。「長（なが）い」と混同注意。音読みは「チュウ」。"}
+],
+jukugo:[
+{q:"電車",c:["でんしゃ","てんしゃ","でんじゃ","でしゃ"],a:0,e:"電車＝でんしゃ（train）。「電」も「車」も交通の基本漢字です。"},
+{q:"会社",c:["かいしゃ","がいしゃ","かいさ","けいしゃ"],a:0,e:"会社＝かいしゃ（company）。「社会（しゃかい）」と字の順が逆の言葉もあります。"},
+{q:"銀行",c:["ぎんこう","きんこう","ぎんご","ぎんこ"],a:0,e:"銀行＝ぎんこう（bank）。最初の「ぎ」は濁ります。"},
+{q:"大学",c:["だいがく","たいがく","だいかく","でがく"],a:0,e:"大学＝だいがく（university）。「大」は「だい・たい・おお」と読み分けます。"},
+{q:"今朝",c:["けさ","こんちょう","いまあさ","きさ"],a:0,e:"今朝＝けさ（this morning）。特別な読み方（熟字訓）です。"},
+{q:"兄弟",c:["きょうだい","きょだい","けいだい","きょうたい"],a:0,e:"兄弟＝きょうだい（siblings）。「巨大（きょだい）」と長音の有無がちがいます。"},
+{q:"両親",c:["りょうしん","りょしん","りょうじん","ろうしん"],a:0,e:"両親＝りょうしん（parents）。「良心（りょうしん）」と同音です。"},
+{q:"家族",c:["かぞく","かそく","がぞく","かずく"],a:0,e:"家族＝かぞく（family）。「加速（かそく）」と濁点一つの差です。"},
+{q:"名前",c:["なまえ","なめえ","なまい","ながえ"],a:0,e:"名前＝なまえ（name）。「お名前は？」の形でよく使います。"},
+{q:"番号",c:["ばんごう","ばんご","はんごう","ばんこう"],a:0,e:"番号＝ばんごう（number）。「電話番号＝でんわばんごう」。"},
+{q:"一緒",c:["いっしょ","いっしょう","いしょ","いっそ"],a:0,e:"一緒＝いっしょ（together）。「一生（いっしょう）」と伸ばすと別の言葉になります。"},
+{q:"今晩",c:["こんばん","こんはん","きんばん","こばん"],a:0,e:"今晩＝こんばん（tonight）。「こんばんは」のあいさつでおなじみです。"},
+{q:"去年",c:["きょねん","きょうねん","こねん","さねん"],a:0,e:"去年＝きょねん（last year）。「きょ」を伸ばさないのがポイント。"},
+{q:"午後",c:["ごご","ここ","ごごう","ごこ"],a:0,e:"午後＝ごご（p.m. / afternoon）。反対は「午前（ごぜん）」。"},
+{q:"午前",c:["ごぜん","ごせん","こぜん","ござん"],a:0,e:"午前＝ごぜん（a.m.）。「五千（ごせん）」と濁点の位置がちがいます。"},
+{q:"外国",c:["がいこく","かいこく","がいごく","げこく"],a:0,e:"外国＝がいこく（foreign country）。「外国人＝がいこくじん」。"},
+{q:"映画",c:["えいが","えが","えいか","ええが"],a:0,e:"映画＝えいが（movie）。「えい」の長音をきちんと発音します。"},
+{q:"音楽",c:["おんがく","おんかく","おんらく","おがく"],a:0,e:"音楽＝おんがく（music）。「楽」はここでは「がく」（楽しい＝たのしい とは別の読み）。"},
+{q:"写真",c:["しゃしん","しゃじん","さしん","しゃし"],a:0,e:"写真＝しゃしん（photo）。「写真を撮る＝しゃしんをとる」。"},
+{q:"宿題",c:["しゅくだい","しゅくたい","しゅうだい","しくだい"],a:0,e:"宿題＝しゅくだい（homework）。「題」は「だい」と濁ります。"},
+{q:"授業",c:["じゅぎょう","じゅきょう","しゅぎょう","じゅぎょ"],a:0,e:"授業＝じゅぎょう（class / lesson）。「修行（しゅぎょう）」と混同注意。"},
+{q:"病気",c:["びょうき","びょき","ひょうき","びょうぎ"],a:0,e:"病気＝びょうき（illness）。「びょう」と伸ばします。"},
+{q:"元気",c:["げんき","けんき","げんぎ","げき"],a:0,e:"元気＝げんき（healthy / energetic）。「お元気ですか」。"},
+{q:"野菜",c:["やさい","やざい","のさい","やせい"],a:0,e:"野菜＝やさい（vegetables）。「野生（やせい）」と混同注意。"},
+{q:"果物",c:["くだもの","かぶつ","くたもの","くだも"],a:0,e:"果物＝くだもの（fruit）。特別な読み方（熟字訓）です。"},
+{q:"飛行機",c:["ひこうき","ひこき","びこうき","ひごうき"],a:0,e:"飛行機＝ひこうき（airplane）。「こう」の長音を忘れずに。"},
+{q:"地下鉄",c:["ちかてつ","じかてつ","ちかでつ","ちがてつ"],a:0,e:"地下鉄＝ちかてつ（subway）。「地」はここでは「ち」と読みます。"},
+{q:"切符",c:["きっぷ","きっぶ","きぷ","せっぷ"],a:0,e:"切符＝きっぷ（ticket）。促音「っ」＋半濁音「ぷ」の組み合わせです。"},
+{q:"財布",c:["さいふ","ざいふ","さいぶ","せいふ"],a:0,e:"財布＝さいふ（wallet）。「政府（せいふ）」と混同注意。"},
+{q:"荷物",c:["にもつ","かもつ","にぶつ","にもち"],a:0,e:"荷物＝にもつ（luggage）。「貨物（かもつ）」は輸送用の荷物のことです。"}
+],
+bun:[
+{s:"【毎朝】七時に起きます。",c:["まいあさ","まいちょう","めあさ","まいさ"],a:0,e:"毎朝＝まいあさ（every morning）。「朝」をここでは訓読みの「あさ」で読みます。"},
+{s:"【友達】と映画を見ました。",c:["ともだち","ゆうだち","ともたち","どもだち"],a:0,e:"友達＝ともだち（friend）。「達」は「だち」と濁ります。「夕立（ゆうだち）」は別の言葉。"},
+{s:"駅の【前】で待っています。",c:["まえ","まい","むえ","もえ"],a:0,e:"前＝まえ（front / before）。反対は「後ろ（うしろ）」。"},
+{s:"【新しい】かばんを買いました。",c:["あたらしい","あらたしい","あだらしい","あたらし"],a:0,e:"新しい＝あたらしい（new）。「改める（あらためる）」と読み分けます。"},
+{s:"【火曜日】にテストがあります。",c:["かようび","ひようび","かようひ","がようび"],a:0,e:"火曜日＝かようび（Tuesday）。「火」はここでは音読みの「か」です。"},
+{s:"子どもたちが【外】で遊んでいます。",c:["そと","そど","すと","さと"],a:0,e:"外＝そと（outside）。「がい」とも読みます（外国＝がいこく）。"},
+{s:"コーヒーに砂糖を【入れます】。",c:["いれます","はいれます","いります","えれます"],a:0,e:"入れる＝いれる（to put in）。「入る（はいる）」と読み分けに注意。"},
+{s:"【安い】店で買いました。",c:["やすい","やずい","やすみ","よすい"],a:0,e:"安い＝やすい（cheap）。「休み（やすみ）」と形が似ています。"},
+{s:"【時々】、公園を散歩します。",c:["ときどき","ときとき","じじ","どきどき"],a:0,e:"時々＝ときどき（sometimes）。二つ目は「どき」と濁ります。"},
+{s:"【朝ご飯】を食べましたか。",c:["あさごはん","あさこはん","あさごほん","さごはん"],a:0,e:"朝ご飯＝あさごはん（breakfast）。「飯」はここでは「はん」→「ごはん」。"},
+{s:"【来月】、国へ帰ります。",c:["らいげつ","らいがつ","きげつ","らいつき"],a:0,e:"来月＝らいげつ（next month）。「月」を「げつ」と読みます（一月＝いちがつ とは別）。"},
+{s:"まどを【開けて】ください。",c:["あけて","ひらけて","あかて","おけて"],a:0,e:"開ける＝あける（to open）。「開く」は「ひらく／あく」とも読む多読み漢字です。"},
+{s:"電気を【消して】ください。",c:["けして","きえして","かして","けいして"],a:0,e:"消す＝けす（to turn off / erase)。自動詞は「消える（きえる）」。"},
+{s:"【水曜日】に会いましょう。",c:["すいようび","みずようび","すいよび","ずいようび"],a:0,e:"水曜日＝すいようび（Wednesday）。「水」はここでは音読みの「すい」です。"}
+]},
+N4:{
+kanji:[
+{q:"頭",c:["あたま","あだま","あたば","おたま"],a:0,e:"頭＝あたま（head）。音読みは「トウ・ズ」（頭痛＝ずつう）。"},
+{q:"首",c:["くび","ぐび","くぴ","こび"],a:0,e:"首＝くび（neck）。「首都＝しゅと」では「しゅ」と読みます。"},
+{q:"体",c:["からだ","がらだ","からた","かただ"],a:0,e:"体＝からだ（body）。音読みは「タイ」（体育＝たいいく）。"},
+{q:"心",c:["こころ","ごころ","こごろ","ここら"],a:0,e:"心＝こころ（heart / mind）。音読みは「シン」（安心＝あんしん）。"},
+{q:"森",c:["もり","ぼり","むり","もろ"],a:0,e:"森＝もり（forest）。木が三つで「森」。「無理（むり）」と混同注意。"},
+{q:"林",c:["はやし","ばやし","はやじ","はなし"],a:0,e:"林＝はやし（woods）。「話（はなし）」と形が似た読みです。"},
+{q:"星",c:["ほし","ぼし","ほじ","はし"],a:0,e:"星＝ほし（star）。「橋・箸（はし）」と一音違いです。"},
+{q:"雪",c:["ゆき","ゆぎ","いき","ゆけ"],a:0,e:"雪＝ゆき（snow）。「行き（いき／ゆき）」と同じ音になることもあります。"},
+{q:"風",c:["かぜ","かせ","がぜ","かざ"],a:0,e:"風＝かぜ（wind）。複合語では「かざ」（風車＝かざぐるま）。"},
+{q:"光",c:["ひかり","ひがり","びかり","ふかり"],a:0,e:"光＝ひかり（light）。動詞は「光る（ひかる）」。音読みは「コウ」（観光）。"},
+{q:"音",c:["おと","おど","うと","おとお"],a:0,e:"音＝おと（sound）。音読みは「オン」（音楽＝おんがく）。"},
+{q:"歌",c:["うた","うだ","うたい","おた"],a:0,e:"歌＝うた（song）。動詞は「歌う（うたう）」。音読みは「カ」（歌手＝かしゅ）。"},
+{q:"味",c:["あじ","あし","あず","えじ"],a:0,e:"味＝あじ（taste）。「足（あし）」と濁点一つの差です。"},
+{q:"服",c:["ふく","ぶく","ふぐ","ほく"],a:0,e:"服＝ふく（clothes）。「洋服＝ようふく」。「河豚（ふぐ）」と混同注意。"},
+{q:"皿",c:["さら","ざら","さろ","すら"],a:0,e:"皿＝さら（plate）。複合語では「ざら」（灰皿＝はいざら）。"},
+{q:"窓",c:["まど","まと","もど","まどう"],a:0,e:"窓＝まど（window）。「的（まと）」と濁点の有無がちがいます。"},
+{q:"庭",c:["にわ","には","にば","なわ"],a:0,e:"庭＝にわ（garden）。「縄（なわ）」と混同注意。音読みは「テイ」（家庭）。"},
+{q:"橋",c:["はし","ばし","はじ","ほし"],a:0,e:"橋＝はし（bridge）。「箸（はし）」「端（はし）」とアクセントで区別します。"},
+{q:"島",c:["しま","じま","しば","すま"],a:0,e:"島＝しま（island）。地名では「じま」（広島＝ひろしま、宮島＝みやじま）。"},
+{q:"石",c:["いし","いじ","えし","いす"],a:0,e:"石＝いし（stone）。「椅子（いす）」「意地（いじ）」と混同注意。"}
+],
+jukugo:[
+{q:"会議",c:["かいぎ","かいき","がいぎ","けいぎ"],a:0,e:"会議＝かいぎ（meeting）。「議」は「ぎ」と濁ります。"},
+{q:"予定",c:["よてい","よて","ようてい","よでい"],a:0,e:"予定＝よてい（plan / schedule）。「よ」は短く読みます。"},
+{q:"予約",c:["よやく","ようやく","よやこ","やよく"],a:0,e:"予約＝よやく（reservation）。「ようやく（finally）」と伸ばすと別の言葉です。"},
+{q:"都合",c:["つごう","つご","とごう","つこう"],a:0,e:"都合＝つごう（convenience / circumstances）。「都」をここでは「つ」と読む特別な例。"},
+{q:"具合",c:["ぐあい","ぐごう","くあい","ぐわい"],a:0,e:"具合＝ぐあい（condition）。「具合が悪い＝体調が悪い」。"},
+{q:"気分",c:["きぶん","きふん","ぎぶん","きびん"],a:0,e:"気分＝きぶん（mood / feeling）。「分」は「ぶん」と濁ります。"},
+{q:"興味",c:["きょうみ","きょみ","こうみ","きょうび"],a:0,e:"興味＝きょうみ（interest）。「興味がある」の形でよく使います。"},
+{q:"趣味",c:["しゅみ","しゅうみ","じゅみ","すみ"],a:0,e:"趣味＝しゅみ（hobby）。「しゅ」を伸ばさないのがポイント。"},
+{q:"生活",c:["せいかつ","せかつ","せいがつ","しょうかつ"],a:0,e:"生活＝せいかつ（life / living）。「生」は読み方が多い漢字の代表です。"},
+{q:"習慣",c:["しゅうかん","しゅかん","しゅうがん","じゅうかん"],a:0,e:"習慣＝しゅうかん（habit）。「週間（しゅうかん）」と同音です。"},
+{q:"約束",c:["やくそく","やくぞく","よくそく","やくしょく"],a:0,e:"約束＝やくそく（promise）。「束」は「そく」と読みます。"},
+{q:"連絡",c:["れんらく","れんかく","れらく","れんろく"],a:0,e:"連絡＝れんらく（contact）。「連絡してください」はよく使う表現です。"},
+{q:"相談",c:["そうだん","そだん","しょうだん","そうたん"],a:0,e:"相談＝そうだん（consultation）。「商談（しょうだん）」はビジネスの話し合い。"},
+{q:"質問",c:["しつもん","しちもん","じつもん","しつぶん"],a:0,e:"質問＝しつもん（question）。「質」は「しつ」、「問」は「もん」。"},
+{q:"返事",c:["へんじ","へんし","べんじ","かえじ"],a:0,e:"返事＝へんじ（reply）。「事」は「じ」と濁ります。"},
+{q:"会話",c:["かいわ","がいわ","かいは","けいわ"],a:0,e:"会話＝かいわ（conversation）。「話」はここでは「わ」と読みます。"},
+{q:"発音",c:["はつおん","はちおん","はつお","ばつおん"],a:0,e:"発音＝はつおん（pronunciation）。「発」は「はつ」（出発＝しゅっぱつ）。"},
+{q:"復習",c:["ふくしゅう","ふくしゅ","ふぐしゅう","ふくじゅう"],a:0,e:"復習＝ふくしゅう（review）。反対は「予習（よしゅう）」。"},
+{q:"予習",c:["よしゅう","よしゅ","ようしゅう","よじゅう"],a:0,e:"予習＝よしゅう（preparation for a lesson）。「予」＝前もって、の意味です。"},
+{q:"試験",c:["しけん","じけん","しげん","しかん"],a:0,e:"試験＝しけん（exam）。「事件（じけん）」「資源（しげん）」と混同注意。"},
+{q:"成績",c:["せいせき","せいぜき","せせき","しょうせき"],a:0,e:"成績＝せいせき（grades / results）。「成績が上がる」。"},
+{q:"入学",c:["にゅうがく","にゅがく","にゅうかく","いりがく"],a:0,e:"入学＝にゅうがく（school entrance）。「入」はここでは「にゅう」。"},
+{q:"卒業",c:["そつぎょう","そつきょう","そちぎょう","そつぎょ"],a:0,e:"卒業＝そつぎょう（graduation）。「業」は「ぎょう」と濁ります。"},
+{q:"空港",c:["くうこう","くうこ","そらこう","くこう"],a:0,e:"空港＝くうこう（airport）。「空」はここでは「くう」と読みます。"},
+{q:"旅館",c:["りょかん","りょうかん","りよかん","りょがん"],a:0,e:"旅館＝りょかん（Japanese inn）。「りょ」を伸ばさないのがポイント。"},
+{q:"景色",c:["けしき","けいしょく","けいしき","けしぎ"],a:0,e:"景色＝けしき（scenery）。特別な読み方（熟字訓）です。「形式（けいしき）」と区別。"},
+{q:"動物",c:["どうぶつ","どうぶち","どぶつ","どうもの"],a:0,e:"動物＝どうぶつ（animal）。「動物園＝どうぶつえん」。"},
+{q:"人形",c:["にんぎょう","にんけい","ひとがた","にんぎょ"],a:0,e:"人形＝にんぎょう（doll）。「人魚（にんぎょ）」と伸ばさないと別の言葉に。"},
+{q:"工場",c:["こうじょう","こじょう","ごうじょう","こうじょ"],a:0,e:"工場＝こうじょう（factory）。二つの長音を両方伸ばします。"},
+{q:"空気",c:["くうき","くうぎ","くき","こうき"],a:0,e:"空気＝くうき（air）。「空気を読む」という慣用表現もあります。"}
+],
+bun:[
+{s:"弟に本を【貸して】あげました。",c:["かして","かりて","かせて","がして"],a:0,e:"貸す＝かす（to lend）。「借りる（かりる）＝to borrow」と反対の意味です。"},
+{s:"図書館で本を【借りました】。",c:["かりました","かしました","きりました","かられました"],a:0,e:"借りる＝かりる（to borrow）。「貸す（かす）」との使い分けは頻出ポイント。"},
+{s:"【夕飯】はカレーにしましょう。",c:["ゆうはん","ゆはん","ゆうぱん","ようはん"],a:0,e:"夕飯＝ゆうはん（dinner）。「夕ご飯（ゆうごはん）」とも言います。"},
+{s:"パーティーの【用意】をします。",c:["ようい","よい","ようぎ","よういん"],a:0,e:"用意＝ようい（preparation）。「容易（ようい）」は同音異義語です。"},
+{s:"【最近】、寒くなりましたね。",c:["さいきん","さいこん","せいきん","さきん"],a:0,e:"最近＝さいきん（recently）。「細菌（さいきん）」と同音です。"},
+{s:"駅まで【走って】行きました。",c:["はしって","そうって","ばしって","はして"],a:0,e:"走る＝はしる（to run）。促音「っ」が入った形「はしって」に注意。"},
+{s:"【特に】野菜が好きです。",c:["とくに","どくに","とぐに","ときに"],a:0,e:"特に＝とくに（especially）。「時に（ときに）」と混同注意。"},
+{s:"漢字を【覚える】のは大変です。",c:["おぼえる","おぼれる","おばえる","おもえる"],a:0,e:"覚える＝おぼえる（to memorize）。「溺れる（おぼれる）」は全く別の意味です。"},
+{s:"【文化】の違いを勉強しています。",c:["ぶんか","ぶんが","もんか","ふんか"],a:0,e:"文化＝ぶんか（culture）。「噴火（ふんか）」と濁点の位置がちがいます。"},
+{s:"【夏休み】に旅行します。",c:["なつやすみ","かやすみ","なつやしみ","なちやすみ"],a:0,e:"夏休み＝なつやすみ（summer vacation）。「夏」＋「休み」の組み合わせ。"},
+{s:"【近所】に住んでいます。",c:["きんじょ","きんしょ","ちかじょ","きんじょう"],a:0,e:"近所＝きんじょ（neighborhood）。「所」は「じょ」と濁ります。"},
+{s:"その話を聞いて【安心】しました。",c:["あんしん","あんじん","あしん","おんしん"],a:0,e:"安心＝あんしん（relief）。反対は「心配（しんぱい）」。"},
+{s:"【地震】が起きたら、机の下に入ってください。",c:["じしん","ちしん","じっしん","しじん"],a:0,e:"地震＝じしん（earthquake）。「自信（じしん）」と同音です。「地」をここでは「じ」と読みます。"},
+{s:"レポートを【必ず】出してください。",c:["かならず","かなず","ひつず","かならす"],a:0,e:"必ず＝かならず（without fail / always）。最後は「ず」と濁ります。"}
+]},
+N3:{
+kanji:[
+{q:"波",c:["なみ","ばみ","なび","なま"],a:0,e:"波＝なみ（wave）。「涙（なみだ）」と最初の音が同じです。音読みは「ハ」（電波）。"},
+{q:"煙",c:["けむり","けもり","けむい","げむり"],a:0,e:"煙＝けむり（smoke）。形容詞は「煙い（けむい）」。音読みは「エン」（禁煙）。"},
+{q:"泥",c:["どろ","とろ","どる","どり"],a:0,e:"泥＝どろ（mud）。「泥棒＝どろぼう」。"},
+{q:"缶",c:["かん","がん","かま","けん"],a:0,e:"缶＝かん（can）。「缶詰＝かんづめ」「空き缶＝あきかん」。"},
+{q:"腰",c:["こし","ごし","こじ","かし"],a:0,e:"腰＝こし（waist / lower back）。「腰が痛い」。「輿（こし）」と同音。"},
+{q:"肌",c:["はだ","ばだ","はた","ひだ"],a:0,e:"肌＝はだ（skin）。「旗（はた）」と濁点の有無がちがいます。"},
+{q:"息",c:["いき","いぎ","えき","いし"],a:0,e:"息＝いき（breath）。「息をする」。「駅（えき）」と混同注意。"},
+{q:"枝",c:["えだ","えた","いだ","おだ"],a:0,e:"枝＝えだ（branch）。「枝豆＝えだまめ」。音読みは「シ」。"},
+{q:"畑",c:["はたけ","ばたけ","はだけ","はたげ"],a:0,e:"畑＝はたけ（field / farm）。日本で作られた国字です。複合語では「ばたけ」（麦畑）。"},
+{q:"湖",c:["みずうみ","みすうみ","みずうま","みずみ"],a:0,e:"湖＝みずうみ（lake）。「水の海」が語源。音読みは「コ」（琵琶湖＝びわこ）。"},
+{q:"谷",c:["たに","だに","たぬ","たね"],a:0,e:"谷＝たに（valley）。「種（たね）」と混同注意。地名では「や」（渋谷＝しぶや）。"},
+{q:"坂",c:["さか","ざか","さが","しか"],a:0,e:"坂＝さか（slope / hill）。「坂を上る」。「逆（ぎゃく）さか？」と迷ったら訓読みの「さか」。"},
+{q:"熱",c:["ねつ","ねち","れつ","ねづ"],a:0,e:"熱＝ねつ（fever / heat）。「熱がある」。形容詞は「熱い（あつい）」。"},
+{q:"指",c:["ゆび","ゆひ","いび","ゆぶ"],a:0,e:"指＝ゆび（finger）。「指輪＝ゆびわ」。音読みは「シ」（指定＝してい）。"},
+{q:"腕",c:["うで","うて","えで","うでん"],a:0,e:"腕＝うで（arm）。「腕がいい＝技術が高い」という意味でも使います。"},
+{q:"虹",c:["にじ","にし","みじ","のじ"],a:0,e:"虹＝にじ（rainbow）。「西（にし）」と濁点の有無がちがいます。"},
+{q:"罪",c:["つみ","づみ","つび","ずみ"],a:0,e:"罪＝つみ（crime / sin）。音読みは「ザイ」（犯罪＝はんざい）。"},
+{q:"夢",c:["ゆめ","ゆべ","いめ","ゆま"],a:0,e:"夢＝ゆめ（dream）。「夢を見る」。音読みは「ム」（夢中＝むちゅう）。"},
+{q:"港",c:["みなと","みなど","みなた","むなと"],a:0,e:"港＝みなと（port / harbor）。音読みは「コウ」（空港＝くうこう）。"},
+{q:"娘",c:["むすめ","むすべ","むずめ","むすみ"],a:0,e:"娘＝むすめ（daughter / girl）。「息子（むすこ）」とセットで覚えましょう。"}
+],
+jukugo:[
+{q:"経済",c:["けいざい","けいさい","けざい","きょうざい"],a:0,e:"経済＝けいざい（economy）。「掲載（けいさい）」「教材（きょうざい）」と混同注意。"},
+{q:"政治",c:["せいじ","せいち","しょうじ","せじ"],a:0,e:"政治＝せいじ（politics）。「治」はここでは「じ」と読みます。"},
+{q:"社会",c:["しゃかい","しゃがい","さかい","しゃっかい"],a:0,e:"社会＝しゃかい（society）。「社外（しゃがい）」は会社の外という意味です。"},
+{q:"制度",c:["せいど","せいと","せど","しょうど"],a:0,e:"制度＝せいど（system）。「生徒（せいと）」と濁点の有無がちがいます。"},
+{q:"状況",c:["じょうきょう","じょうきょ","しょうきょう","じょきょう"],a:0,e:"状況＝じょうきょう（situation）。二つの長音を両方伸ばします。"},
+{q:"想像",c:["そうぞう","そうそう","しょうぞう","そぞう"],a:0,e:"想像＝そうぞう（imagination）。「創造（そうぞう・creation）」は同音異義語。"},
+{q:"印象",c:["いんしょう","いんぞう","いしょう","いんしょ"],a:0,e:"印象＝いんしょう（impression）。「衣装（いしょう）」と混同注意。"},
+{q:"表現",c:["ひょうげん","ひょうけん","びょうげん","ひょげん"],a:0,e:"表現＝ひょうげん（expression）。「現」は「げん」と濁ります。"},
+{q:"解決",c:["かいけつ","かいげつ","けいけつ","かいけち"],a:0,e:"解決＝かいけつ（solution）。「問題を解決する」。"},
+{q:"判断",c:["はんだん","ばんだん","はんたん","はだん"],a:0,e:"判断＝はんだん（judgment）。「破談（はだん）」は約束が壊れること。"},
+{q:"遅刻",c:["ちこく","じこく","ちごく","ちこぐ"],a:0,e:"遅刻＝ちこく（being late）。「時刻（じこく）」と濁点一つの差です。"},
+{q:"渋滞",c:["じゅうたい","しゅうたい","じゅたい","じゅうだい"],a:0,e:"渋滞＝じゅうたい（traffic jam）。「重大（じゅうだい）」と混同注意。"},
+{q:"販売",c:["はんばい","はんぱい","ばんばい","はばい"],a:0,e:"販売＝はんばい（sales）。「売」は「ばい」と濁ります。"},
+{q:"割引",c:["わりびき","わりひき","かつびき","わりびぎ"],a:0,e:"割引＝わりびき（discount）。「引」は「びき」と濁ります。"},
+{q:"営業",c:["えいぎょう","えいきょう","えぎょう","えいぎょ"],a:0,e:"営業＝えいぎょう（business / sales）。「影響（えいきょう）」と一音違い。"},
+{q:"残業",c:["ざんぎょう","さんぎょう","ざんきょう","ざんぎょ"],a:0,e:"残業＝ざんぎょう（overtime work）。「産業（さんぎょう）」と混同注意。"},
+{q:"出張",c:["しゅっちょう","しゅちょう","しゅっちょ","しゅつちょう"],a:0,e:"出張＝しゅっちょう（business trip）。促音「っ」が入ります。「主張（しゅちょう）」と区別。"},
+{q:"書類",c:["しょるい","しょうるい","しょりい","かきるい"],a:0,e:"書類＝しょるい（documents）。「しょ」を伸ばさないのがポイント。"},
+{q:"給料",c:["きゅうりょう","きゅうりょ","きゅりょう","ぎゅうりょう"],a:0,e:"給料＝きゅうりょう（salary）。「牛（ぎゅう）」と濁らないように。"},
+{q:"貯金",c:["ちょきん","ちょうきん","ちょぎん","じょきん"],a:0,e:"貯金＝ちょきん（savings）。「ちょ」を伸ばさないのがポイント。"},
+{q:"家賃",c:["やちん","かちん","いえちん","やじん"],a:0,e:"家賃＝やちん（rent）。「家」をここでは「や」と読みます。"},
+{q:"引っ越し",c:["ひっこし","ひきこし","ひっごし","ひこし"],a:0,e:"引っ越し＝ひっこし（moving house）。促音「っ」を落とさないように。"},
+{q:"故障",c:["こしょう","こしょ","ごしょう","こじょう"],a:0,e:"故障＝こしょう（breakdown）。「胡椒（こしょう・pepper）」と同音です。"},
+{q:"修理",c:["しゅうり","しゅり","しゅうりん","じゅうり"],a:0,e:"修理＝しゅうり（repair）。「しゅう」と伸ばします。"},
+{q:"温泉",c:["おんせん","おんぜん","おんせい","うんせん"],a:0,e:"温泉＝おんせん（hot spring）。「音声（おんせい）」と混同注意。"},
+{q:"観光",c:["かんこう","がんこう","かんごう","けんこう"],a:0,e:"観光＝かんこう（sightseeing）。「健康（けんこう）」と混同注意。"},
+{q:"記念",c:["きねん","きんえん","ぎねん","きれん"],a:0,e:"記念＝きねん（commemoration）。「禁煙（きんえん）」と音の順序がちがいます。"},
+{q:"感謝",c:["かんしゃ","がんしゃ","かんさ","かんじゃ"],a:0,e:"感謝＝かんしゃ（gratitude）。「患者（かんじゃ）」と濁点の有無がちがいます。"},
+{q:"遠慮",c:["えんりょ","えんりょう","えんろ","おんりょ"],a:0,e:"遠慮＝えんりょ（restraint / hesitation）。「りょ」を伸ばさないのがポイント。"},
+{q:"苦労",c:["くろう","くろ","ころう","ぐろう"],a:0,e:"苦労＝くろう（hardship）。「黒（くろ）」と伸ばさないと別の言葉になります。"}
+],
+bun:[
+{s:"台風で試合が【中止】になった。",c:["ちゅうし","ちゅうじ","ちゅし","なかし"],a:0,e:"中止＝ちゅうし（cancellation）。「注意（ちゅうい）」と混同しないように。"},
+{s:"ようやく荷物が【届きました】。",c:["とどきました","とときました","どどきました","とどけました"],a:0,e:"届く＝とどく（to arrive・自動詞）。「届ける（とどける）」は他動詞です。"},
+{s:"この町の人口は年々【減って】いる。",c:["へって","げんって","べって","へて"],a:0,e:"減る＝へる（to decrease）。促音の入った「へって」の形に注意。反対は「増える」。"},
+{s:"貯金が【増える】ように節約している。",c:["ふえる","ぶえる","ふれる","はえる"],a:0,e:"増える＝ふえる（to increase）。「生える（はえる）」「触れる（ふれる）」と区別。"},
+{s:"部屋を【片付けて】ください。",c:["かたづけて","かたつけて","かたずけて","へんづけて"],a:0,e:"片付ける＝かたづける（to tidy up）。かなは「づ」を使います（「かたずけ」は誤り）。"},
+{s:"危険な場所は【避ける】ようにしている。",c:["さける","ひける","さげる","あける"],a:0,e:"避ける＝さける（to avoid）。「下げる（さげる）」「開ける（あける）」と区別。"},
+{s:"【偶然】、駅で先生に会った。",c:["ぐうぜん","ぐぜん","くうぜん","ぐうせん"],a:0,e:"偶然＝ぐうぜん（by chance）。反対は「必然（ひつぜん）」。"},
+{s:"【突然】、雨が降り出した。",c:["とつぜん","どつぜん","とつせん","とうぜん"],a:0,e:"突然＝とつぜん（suddenly）。「当然（とうぜん・of course）」と混同注意。"},
+{s:"私はその計画に【反対】した。",c:["はんたい","はんだい","ばんたい","はんてい"],a:0,e:"反対＝はんたい（opposition）。「判定（はんてい）」と混同注意。"},
+{s:"各社の電気代を【比べて】みた。",c:["くらべて","ひべて","くらへて","ならべて"],a:0,e:"比べる＝くらべる（to compare）。「並べる（ならべる）」と区別しましょう。"},
+{s:"遅刻したことを【謝った】。",c:["あやまった","あゆまった","あやまた","おやまった"],a:0,e:"謝る＝あやまる（to apologize）。「誤る（あやまる・to make a mistake）」と同音です。"},
+{s:"大事な書類を【破って】しまった。",c:["やぶって","やばって","はぶって","わぶって"],a:0,e:"破る＝やぶる（to tear）。自動詞は「破れる（やぶれる）」。"},
+{s:"音楽を聞いて気分を【変える】。",c:["かえる","かわる","がえる","へんえる"],a:0,e:"変える＝かえる（to change・他動詞）。「変わる（かわる）」は自動詞です。"},
+{s:"ここが町で【最も】人気のある店です。",c:["もっとも","もっと","さいも","もとも"],a:0,e:"最も＝もっとも（the most）。「もっと（more）」より強い最上級の表現です。"}
+]},
+N2:{
+kanji:[
+{q:"丘",c:["おか","おが","うか","おこ"],a:0,e:"丘＝おか（hill）。音読みは「キュウ」（砂丘＝さきゅう）。"},
+{q:"縄",c:["なわ","なば","にわ","なや"],a:0,e:"縄＝なわ（rope）。「縄跳び＝なわとび」。「庭（にわ）」と混同注意。"},
+{q:"鉢",c:["はち","ばち","はし","ほち"],a:0,e:"鉢＝はち（pot / bowl）。複合語では「ばち」（植木鉢＝うえきばち）。"},
+{q:"軒",c:["のき","のぎ","ぬき","のけ"],a:0,e:"軒＝のき（eaves）。家を数える「一軒（いっけん）」では「けん」。"},
+{q:"塀",c:["へい","べい","はい","ひい"],a:0,e:"塀＝へい（wall / fence）。「塀を乗り越える」。"},
+{q:"綿",c:["わた","わだ","あた","わな"],a:0,e:"綿＝わた（cotton）。「罠（わな）」と混同注意。音読みは「メン」（綿100%）。"},
+{q:"絹",c:["きぬ","ぎぬ","きね","けぬ"],a:0,e:"絹＝きぬ（silk）。音読みは「ケン」（絹糸＝けんし）。"},
+{q:"粒",c:["つぶ","つふ","づぶ","とぶ"],a:0,e:"粒＝つぶ（grain / drop）。「米粒＝こめつぶ」。音読みは「リュウ」。"},
+{q:"羽",c:["はね","ばね","はな","はめ"],a:0,e:"羽＝はね（feather / wing）。「バネ」と混同注意。鳥を数える時は「わ」（一羽）。"},
+{q:"湯",c:["ゆ","ゆう","よ","い"],a:0,e:"湯＝ゆ（hot water）。「お湯」。伸ばさず短く読みます。音読みは「トウ」（銭湯）。"},
+{q:"汁",c:["しる","じる","しり","する"],a:0,e:"汁＝しる（soup / juice）。複合語では「じる」（味噌汁＝みそしる）。"},
+{q:"棚",c:["たな","だな","たに","たね"],a:0,e:"棚＝たな（shelf）。複合語では「だな」（本棚＝ほんだな）。"},
+{q:"隣",c:["となり","どなり","とねり","となみ"],a:0,e:"隣＝となり（next to / neighbor）。「怒鳴り（どなり）」と混同注意。"},
+{q:"岬",c:["みさき","みざき","みさぎ","むさき"],a:0,e:"岬＝みさき（cape）。海に突き出た地形のこと。地名によく使われます。"},
+{q:"麦",c:["むぎ","むき","もぎ","むげ"],a:0,e:"麦＝むぎ（wheat / barley）。「麦茶＝むぎちゃ」。音読みは「バク」（麦芽）。"},
+{q:"芝",c:["しば","じば","しま","すば"],a:0,e:"芝＝しば（lawn / grass）。「芝生＝しばふ」。「島（しま）」と混同注意。"},
+{q:"鈴",c:["すず","すす","ずず","すぜ"],a:0,e:"鈴＝すず（bell）。「煤（すす）」と濁点の有無がちがいます。音読みは「リン」（風鈴）。"},
+{q:"泉",c:["いずみ","いすみ","えずみ","いずま"],a:0,e:"泉＝いずみ（spring / fountain）。「温泉（おんせん）」では「せん」。"},
+{q:"幹",c:["みき","みぎ","まき","みけ"],a:0,e:"幹＝みき（tree trunk）。「右（みぎ）」と濁点の有無がちがいます。音読みは「カン」（新幹線）。"},
+{q:"潟",c:["かた","がた","かだ","きた"],a:0,e:"潟＝かた（lagoon）。地名では「がた」（新潟＝にいがた）。"}
+],
+jukugo:[
+{q:"依頼",c:["いらい","いれい","いらん","えらい"],a:0,e:"依頼＝いらい（request）。「以来（いらい）」と同音です。「偉い（えらい）」と区別。"},
+{q:"催促",c:["さいそく","さいぞく","せいそく","さいしょく"],a:0,e:"催促＝さいそく（urging / reminder）。「返事を催促する」。"},
+{q:"削除",c:["さくじょ","さくじょう","しょうじょ","さくしょ"],a:0,e:"削除＝さくじょ（deletion）。「じょ」を伸ばさないのがポイント。"},
+{q:"削減",c:["さくげん","さくけん","しゃくげん","さげん"],a:0,e:"削減＝さくげん（reduction）。「経費を削減する」。"},
+{q:"徹夜",c:["てつや","てちや","てつよ","でつや"],a:0,e:"徹夜＝てつや（staying up all night）。「徹夜で勉強する」。"},
+{q:"徹底",c:["てってい","てつてい","てって","てんてい"],a:0,e:"徹底＝てってい（thoroughness）。促音「っ」が入ります。"},
+{q:"妨害",c:["ぼうがい","ぼうかい","もうがい","ぼがい"],a:0,e:"妨害＝ぼうがい（obstruction）。動詞は「妨げる（さまたげる）」。"},
+{q:"措置",c:["そち","そっち","しょち","そちん"],a:0,e:"措置＝そち（measure / step）。「処置（しょち）」と混同しやすい言葉です。"},
+{q:"需要",c:["じゅよう","じゅうよう","しゅよう","じよう"],a:0,e:"需要＝じゅよう（demand）。「重要（じゅうよう）」「主要（しゅよう）」と混同注意。"},
+{q:"供給",c:["きょうきゅう","きょうきゅ","きょきゅう","こうきゅう"],a:0,e:"供給＝きょうきゅう（supply）。「需要と供給」でセットの経済用語です。"},
+{q:"損害",c:["そんがい","そんかい","ぞんがい","そがい"],a:0,e:"損害＝そんがい（damage / loss）。「存外（ぞんがい）」「阻害（そがい）」と区別。"},
+{q:"契約",c:["けいやく","けいよく","けやく","せいやく"],a:0,e:"契約＝けいやく（contract）。「制約（せいやく）」と混同注意。"},
+{q:"抽選",c:["ちゅうせん","ちゅせん","ちゅうぜん","じゅうせん"],a:0,e:"抽選＝ちゅうせん（lottery / drawing）。「抽選に当たる」。"},
+{q:"傾向",c:["けいこう","けいごう","けこう","けいこ"],a:0,e:"傾向＝けいこう（tendency）。「稽古（けいこ）」と伸ばさないと別の言葉に。"},
+{q:"姿勢",c:["しせい","しぜい","すがせい","しせ"],a:0,e:"姿勢＝しせい（posture / attitude）。訓読みは「姿（すがた）」。"},
+{q:"就職",c:["しゅうしょく","しゅしょく","しゅうしょ","じゅうしょく"],a:0,e:"就職＝しゅうしょく（getting a job）。「主食（しゅしょく）」「住職（じゅうしょく）」と区別。"},
+{q:"面倒",c:["めんどう","めんとう","めんど","めいどう"],a:0,e:"面倒＝めんどう（troublesome）。「面倒を見る＝世話をする」という慣用句も。"},
+{q:"行方",c:["ゆくえ","いきかた","ぎょうほう","ゆきえ"],a:0,e:"行方＝ゆくえ（whereabouts）。特別な読み方（熟字訓）です。「行方不明」。"},
+{q:"芝居",c:["しばい","じばい","しばえ","すばい"],a:0,e:"芝居＝しばい（play / acting）。「芝居がかった＝大げさな」という表現も。"},
+{q:"素直",c:["すなお","そなお","すのお","ずなお"],a:0,e:"素直＝すなお（honest / obedient）。「素」をここでは「す」と読みます。"},
+{q:"上旬",c:["じょうじゅん","うわじゅん","じょうしゅん","じょじゅん"],a:0,e:"上旬＝じょうじゅん（first ten days of a month）。中旬・下旬（げじゅん）とセットで。"},
+{q:"冗談",c:["じょうだん","じょだん","しょうだん","じょうたん"],a:0,e:"冗談＝じょうだん（joke）。「商談（しょうだん）」と混同注意。"},
+{q:"苦情",c:["くじょう","くじょ","こじょう","ぐじょう"],a:0,e:"苦情＝くじょう（complaint）。「苦情を言う」。"},
+{q:"恐縮",c:["きょうしゅく","きょしゅく","きょうしゅう","こうしゅく"],a:0,e:"恐縮＝きょうしゅく（feeling obliged）。「恐縮ですが〜」は丁寧な依頼の定番表現。"},
+{q:"承知",c:["しょうち","じょうち","しょち","そうち"],a:0,e:"承知＝しょうち（consent / knowing）。「承知しました」はビジネス頻出。「装置（そうち）」と区別。"},
+{q:"詳細",c:["しょうさい","しょさい","じょうさい","しょうざい"],a:0,e:"詳細＝しょうさい（details）。「書斎（しょさい）」と混同注意。"},
+{q:"誇張",c:["こちょう","こうちょう","ごちょう","こちょ"],a:0,e:"誇張＝こちょう（exaggeration）。「校長（こうちょう）」と伸ばすと別の言葉に。"},
+{q:"濃度",c:["のうど","のど","のうと","ぬうど"],a:0,e:"濃度＝のうど（concentration / density）。「喉（のど）」と混同注意。"},
+{q:"慎重",c:["しんちょう","しんじゅう","しんちょ","じんちょう"],a:0,e:"慎重＝しんちょう（cautious）。「身長（しんちょう）」と同音です。"},
+{q:"締め切り",c:["しめきり","しめぎり","ていきり","しまきり"],a:0,e:"締め切り＝しめきり（deadline）。「締切」とも書きます。"}
+],
+bun:[
+{s:"新製品の開発に【携わって】いる。",c:["たずさわって","けいわって","たずさって","たすさわって"],a:0,e:"携わる＝たずさわる（to be engaged in）。「携帯（けいたい）」の「携」です。"},
+{s:"目上の人を【敬う】。",c:["うやまう","けいう","うやう","うまやう"],a:0,e:"敬う＝うやまう（to respect）。「尊敬（そんけい）」の「敬」です。"},
+{s:"応募の条件を【満たして】いる。",c:["みたして","まんたして","みちして","もたして"],a:0,e:"満たす＝みたす（to fulfill / fill）。「満ちる（みちる）」は自動詞です。"},
+{s:"電力の消費を【抑える】。",c:["おさえる","よくえる","おざえる","おしえる"],a:0,e:"抑える＝おさえる（to suppress / control）。「教える（おしえる）」と混同注意。"},
+{s:"彼は責任を【逃れよう】とした。",c:["のがれよう","にげれよう","とうれよう","のがれろう"],a:0,e:"逃れる＝のがれる（to escape / evade）。「逃げる（にげる）」と読み分けます。"},
+{s:"今月の売上目標を【達成】した。",c:["たっせい","たつせい","たっぜい","だっせい"],a:0,e:"達成＝たっせい（achievement）。促音「っ」が入ります。"},
+{s:"締め切りを三日【延ばして】もらった。",c:["のばして","えんばして","のはして","ぬばして"],a:0,e:"延ばす＝のばす（to postpone / extend）。「伸ばす（のばす）」は長さを伸ばす時に使います。"},
+{s:"貴重な文化財を【保存】する。",c:["ほぞん","ほそん","ぼぞん","ほうぞん"],a:0,e:"保存＝ほぞん（preservation / saving）。「ほ」を伸ばさないのがポイント。"},
+{s:"二つの案を【比較】する。",c:["ひかく","ひがく","びかく","ひかぐ"],a:0,e:"比較＝ひかく（comparison）。「皮革（ひかく）」と同音です。"},
+{s:"雨のため、出発を一日【延期】した。",c:["えんき","えんぎ","えんご","のべき"],a:0,e:"延期＝えんき（postponement）。「縁起（えんぎ）」と濁点の有無がちがいます。"},
+{s:"役所での手続きを【済ませた】。",c:["すませた","すまさせた","ずませた","すめせた"],a:0,e:"済ませる＝すませる（to finish）。「経済（けいざい）」の「済」です。"},
+{s:"警察が犯人の行方を【追う】。",c:["おう","あう","おお","つう"],a:0,e:"追う＝おう（to chase）。「会う（あう）」「負う（おう）」と混同注意。"},
+{s:"グラフで経費の内訳を【示す】。",c:["しめす","じめす","しるす","しめず"],a:0,e:"示す＝しめす（to show / indicate）。「記す（しるす）」と区別しましょう。"},
+{s:"大雨で川の水が【濁って】いる。",c:["にごって","だくって","にこって","ぬごって"],a:0,e:"濁る＝にごる（to become muddy）。「濁点（だくてん）」の「濁」です。"}
+]},
+N1:{
+kanji:[
+{q:"藍",c:["あい","あお","らい","あえ"],a:0,e:"藍＝あい（indigo）。「青は藍より出でて藍より青し」という故事成語も。"},
+{q:"桁",c:["けた","げた","けだ","かた"],a:0,e:"桁＝けた（digit / beam）。「桁違い＝けたちがい」。「下駄（げた）」と混同注意。"},
+{q:"崖",c:["がけ","かけ","がげ","がい"],a:0,e:"崖＝がけ（cliff）。「崖っぷち＝追い詰められた状況」の比喩でも使います。"},
+{q:"洞",c:["ほら","ぼら","ほろ","はら"],a:0,e:"洞＝ほら（cave）。「洞穴＝ほらあな」。音読みは「ドウ」（洞窟＝どうくつ）。"},
+{q:"繭",c:["まゆ","まよ","みゆ","まゆう"],a:0,e:"繭＝まゆ（cocoon）。蚕（かいこ）が作るもの。「眉（まゆ）」と同音です。"},
+{q:"漆",c:["うるし","うろし","うるじ","ぬるし"],a:0,e:"漆＝うるし（lacquer）。「漆器＝しっき」では「しつ」と読みます。"},
+{q:"鎌",c:["かま","がま","かば","けま"],a:0,e:"鎌＝かま（sickle）。「鎌倉＝かまくら」。「窯（かま）」「釜（かま）」と同音。"},
+{q:"帆",c:["ほ","ぼ","ふ","へ"],a:0,e:"帆＝ほ（sail）。「帆を張る」。音読みは「ハン」（帆船＝はんせん）。"},
+{q:"暦",c:["こよみ","こやみ","くよみ","こよび"],a:0,e:"暦＝こよみ（calendar）。音読みは「レキ」（西暦＝せいれき）。"},
+{q:"頂",c:["いただき","ちょうだい","いただけ","いたたき"],a:0,e:"頂＝いただき（summit / top）。「山の頂」。「頂戴（ちょうだい）」は音読みの言葉です。"},
+{q:"峰",c:["みね","みぬ","むね","みれ"],a:0,e:"峰＝みね（peak / ridge）。「胸（むね）」と混同注意。音読みは「ホウ」（連峰）。"},
+{q:"裾",c:["すそ","すぞ","しそ","すせ"],a:0,e:"裾＝すそ（hem）。「裾野＝すその」は山のふもとの広がりも指します。"},
+{q:"襟",c:["えり","えい","いり","えれ"],a:0,e:"襟＝えり（collar）。「襟を正す＝気持ちを引き締める」という慣用句も。"},
+{q:"袖",c:["そで","そて","すで","さで"],a:0,e:"袖＝そで（sleeve）。「袖振り合うも多生の縁」ということわざがあります。"},
+{q:"翼",c:["つばさ","つばめ","つはさ","つばさき"],a:0,e:"翼＝つばさ（wing）。「燕（つばめ）」は鳥の名前で別の言葉です。"},
+{q:"渦",c:["うず","うす","おず","うざ"],a:0,e:"渦＝うず（whirlpool / vortex）。「渦に巻き込まれる」。「臼（うす）」と区別。"},
+{q:"礎",c:["いしずえ","いしすえ","いしずめ","いしぶえ"],a:0,e:"礎＝いしずえ（foundation / cornerstone）。「発展の礎を築く」。音読みは「ソ」（基礎）。"},
+{q:"趣",c:["おもむき","しゅみ","おもむぎ","おももき"],a:0,e:"趣＝おもむき（charm / flavor）。「趣のある庭」。「趣味（しゅみ）」は音読みの言葉。"},
+{q:"志",c:["こころざし","こころさし","こころざす","ここざし"],a:0,e:"志＝こころざし（ambition / will）。動詞は「志す（こころざす）」。"},
+{q:"塊",c:["かたまり","かだまり","かたまい","かたばり"],a:0,e:"塊＝かたまり（lump / mass）。「氷の塊」。音読みは「カイ」（金塊＝きんかい）。"}
+],
+jukugo:[
+{q:"葛藤",c:["かっとう","かつとう","かっと","がっとう"],a:0,e:"葛藤＝かっとう（inner conflict）。植物の葛（くず）と藤（ふじ）が絡み合う様子が語源。"},
+{q:"危惧",c:["きぐ","きく","きぎ","あやぐ"],a:0,e:"危惧＝きぐ（apprehension / fear）。「絶滅危惧種＝ぜつめつきぐしゅ」。"},
+{q:"脆弱",c:["ぜいじゃく","きじゃく","ぜいしゃく","せいじゃく"],a:0,e:"脆弱＝ぜいじゃく（fragile / vulnerable）。「きじゃく」は有名な誤読です。「静寂（せいじゃく）」と区別。"},
+{q:"遂行",c:["すいこう","ついこう","とげこう","すいごう"],a:0,e:"遂行＝すいこう（execution / accomplishment）。「任務を遂行する」。訓読みは「遂げる（とげる）」。"},
+{q:"逝去",c:["せいきょ","せっきょ","いきょ","せいきょう"],a:0,e:"逝去＝せいきょ（death・敬語）。目上の人が亡くなった時に使う丁寧な言葉です。"},
+{q:"会釈",c:["えしゃく","かいしゃく","えしゃ","あいしゃく"],a:0,e:"会釈＝えしゃく（slight bow）。「解釈（かいしゃく）」と混同しやすい特殊な読みです。"},
+{q:"建立",c:["こんりゅう","けんりつ","たてりつ","こんりつ"],a:0,e:"建立＝こんりゅう（erection of a temple）。寺社を建てる時の専門的な読み。「けんりつ（県立）」ではありません。"},
+{q:"境内",c:["けいだい","きょうない","けいない","きょうだい"],a:0,e:"境内＝けいだい（temple / shrine grounds）。「きょうない」と読まないのがポイント。"},
+{q:"云々",c:["うんぬん","でんでん","うんうん","うんねん"],a:0,e:"云々＝うんぬん（and so on）。引用を省略する時に使います。「でんでん」は有名な誤読。"},
+{q:"相殺",c:["そうさい","そうさつ","あいさつ","そうせつ"],a:0,e:"相殺＝そうさい（offsetting）。「殺」を「さい」と読む特殊な例。「そうさつ」は誤読です。"},
+{q:"汎用",c:["はんよう","ぼんよう","はんゆう","ばんよう"],a:0,e:"汎用＝はんよう（general-purpose）。「凡庸（ぼんよう・mediocre）」と混同注意。"},
+{q:"逐一",c:["ちくいち","ついいち","ちくひと","ちくいつ"],a:0,e:"逐一＝ちくいち（one by one / in detail）。「逐一報告する」。"},
+{q:"拉致",c:["らち","らっち","りち","らつち"],a:0,e:"拉致＝らち（abduction）。ニュースで使われる言葉です。「埒（らち）が明かない」とは別。"},
+{q:"頒布",c:["はんぷ","ふんぷ","はんふ","ばんぷ"],a:0,e:"頒布＝はんぷ（distribution）。「配布（はいふ）」より硬い言葉です。"},
+{q:"凡例",c:["はんれい","ぼんれい","はんりつ","ばんれい"],a:0,e:"凡例＝はんれい（legend / explanatory notes）。「凡」を「はん」と読む特殊な例。「ぼんれい」は誤読。"},
+{q:"出納",c:["すいとう","しゅつのう","でのう","すいのう"],a:0,e:"出納＝すいとう（receipts and payments）。「出納帳」。両方の字が特殊な読みになります。"},
+{q:"遊説",c:["ゆうぜい","ゆうせつ","ゆぜい","ゆうえつ"],a:0,e:"遊説＝ゆうぜい（campaign speech tour）。「説」を「ぜい」と読む特殊な例です。"},
+{q:"反響",c:["はんきょう","はんごう","ばんきょう","はんきょ"],a:0,e:"反響＝はんきょう（echo / response）。「大きな反響を呼ぶ」。"},
+{q:"貪欲",c:["どんよく","たんよく","とんよく","どんおく"],a:0,e:"貪欲＝どんよく（greedy / avid）。「貪欲に学ぶ」と良い意味でも使います。"},
+{q:"憤慨",c:["ふんがい","ふんかい","ぷんがい","ふながい"],a:0,e:"憤慨＝ふんがい（indignation）。「憤る（いきどおる）」の「憤」です。"},
+{q:"陳腐",c:["ちんぷ","ちんふ","じんぷ","ちんぶ"],a:0,e:"陳腐＝ちんぷ（cliché / stale）。「陳腐な表現」。半濁音「ぷ」に注意。"},
+{q:"婉曲",c:["えんきょく","わんきょく","えんぎょく","えんきょ"],a:0,e:"婉曲＝えんきょく（euphemistic / indirect）。「湾曲（わんきょく・curved）」と混同注意。"},
+{q:"折衷",c:["せっちゅう","せつちゅう","せっちゅ","おりちゅう"],a:0,e:"折衷＝せっちゅう（compromise / blending）。「和洋折衷」でよく使われます。"},
+{q:"妥結",c:["だけつ","たけつ","だけち","だげつ"],a:0,e:"妥結＝だけつ（reaching an agreement）。「交渉が妥結する」。"},
+{q:"暫定",c:["ざんてい","ぜんてい","さんてい","ざんて"],a:0,e:"暫定＝ざんてい（provisional）。「前提（ぜんてい）」「算定（さんてい）」と区別。"},
+{q:"匿名",c:["とくめい","どくめい","じゃくめい","とくみょう"],a:0,e:"匿名＝とくめい（anonymity）。「匿名で投稿する」。"},
+{q:"罵倒",c:["ばとう","まとう","ばどう","はとう"],a:0,e:"罵倒＝ばとう（abuse / vilification）。「罵る（ののしる）」の「罵」です。"},
+{q:"累計",c:["るいけい","るいげい","らいけい","るけい"],a:0,e:"累計＝るいけい（cumulative total）。「累計販売数」。"},
+{q:"語弊",c:["ごへい","ごべい","こへい","ごへん"],a:0,e:"語弊＝ごへい（misleading expression）。「語弊があるかもしれないが」の形でよく使います。"},
+{q:"気配",c:["けはい","きはい","けばい","きくばり"],a:0,e:"気配＝けはい（sign / presence）。「人の気配がする」。「気配り（きくばり）」とは別の言葉です。"}
+],
+bun:[
+{s:"その記事は政界の不正を【暴く】ものだった。",c:["あばく","ぼうく","あぼく","あらく"],a:0,e:"暴く＝あばく（to expose）。「暴力（ぼうりょく）」の「暴」とは読みが変わります。"},
+{s:"古い慣習が次第に【廃れて】いく。",c:["すたれて","はいれて","すだれて","すてれて"],a:0,e:"廃れる＝すたれる（to fall out of use）。「廃止（はいし）」の「廃」です。"},
+{s:"重要な判断を部下に【委ねる】。",c:["ゆだねる","いねる","ゆずねる","ゆだれる"],a:0,e:"委ねる＝ゆだねる（to entrust）。「委員会（いいんかい）」の「委」です。"},
+{s:"敵の進行を【阻む】。",c:["はばむ","こばむ","はさむ","はげむ"],a:0,e:"阻む＝はばむ（to block / hinder）。「拒む（こばむ）」「挟む（はさむ）」「励む（はげむ）」と区別。"},
+{s:"彼女は日々の努力を【怠らない】。",c:["おこたらない","なまけらない","おこらない","おとらない"],a:0,e:"怠る＝おこたる（to neglect）。「怠ける（なまける）」と読み分けます。「怒らない」「劣らない」とも区別。"},
+{s:"被害を最小限に【留める】。",c:["とどめる","とめる","りゅうめる","ととめる"],a:0,e:"留める＝とどめる（to limit / keep to）。「止める（とめる）」より書き言葉的な表現です。"},
+{s:"汚職事件が政権を【揺るがした】。",c:["ゆるがした","ようがした","ゆるかした","よろがした"],a:0,e:"揺るがす＝ゆるがす（to shake）。「揺れる（ゆれる）」の他動詞的な形です。"},
+{s:"彼は【玄人】はだしの腕前だ。",c:["くろうと","げんじん","しろうと","くろひと"],a:0,e:"玄人＝くろうと（expert）。特別な読み方（熟字訓）。反対は「素人（しろうと）」。"},
+{s:"観客は【固唾】をのんで見守った。",c:["かたず","かたつ","かたつば","こず"],a:0,e:"固唾＝かたず（held breath）。「固唾をのむ＝緊張して見守る」の慣用句で使います。"},
+{s:"彼の提案は一考に【値する】。",c:["あたいする","ねする","ちする","あたえする"],a:0,e:"値する＝あたいする（to be worth）。「与える（あたえる）」と混同注意。"},
+{s:"調査により事件の全容が【詳らかに】なった。",c:["つまびらかに","しょうらかに","つばひらかに","つまびからに"],a:0,e:"詳らか＝つまびらか（detailed / clear）。「詳しい（くわしい）」の「詳」の特殊な訓読みです。"},
+{s:"敗戦の責任を取り、王座から【退いた】。",c:["しりぞいた","たいいた","しりそいた","のぞいた"],a:0,e:"退く＝しりぞく（to retreat / step down）。「退職（たいしょく）」の「退」です。"},
+{s:"彼は会社の再建に【尽力】した。",c:["じんりょく","つくりょく","じんりき","しんりょく"],a:0,e:"尽力＝じんりょく（effort）。「人力（じんりき）」「新緑（しんりょく）」と混同注意。"},
+{s:"誤解を招いた点について【釈明】した。",c:["しゃくめい","せきめい","しゃくみょう","さくめい"],a:0,e:"釈明＝しゃくめい（explanation / vindication）。「解釈（かいしゃく）」の「釈」です。"}
+]}};
+
+/* 追加バンクを既存DATAへマージ（出題は自動的に全問からランダム） */
+Object.entries(EXTRA).forEach(([lv,cats])=>{
+  Object.entries(cats).forEach(([c,items])=>DATA[lv][c].push(...items));
+});
+
+/* ============================================================
+   サウンドエンジン（Web Audio API・外部ファイル不要）
+   ============================================================ */
+const Snd=(()=>{
+ let ctx=null, master=null, bgm={timer:null,nextBar:0,name:null,barCount:0};
+ function ac(){ if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
+   master=ctx.createGain(); master.gain.value=.9; master.connect(ctx.destination);} 
+   if(ctx.state==="suspended") ctx.resume(); return ctx;}
+ function tone(f,t,d,{type="sine",g=.2,slide=0,att=.01}={}){
+   const c=ac(),o=c.createOscillator(),gn=c.createGain();
+   o.type=type;o.frequency.setValueAtTime(f,t);
+   if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);
+   gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(g,t+att);
+   gn.gain.exponentialRampToValueAtTime(.0001,t+d);
+   o.connect(gn).connect(master);o.start(t);o.stop(t+d+.05);}
+ function noise(t,d,{g=.25,fc=1200,q=1,type="bandpass",slide=0}={}){
+   const c=ac(),len=Math.max(1,c.sampleRate*d),buf=c.createBuffer(1,len,c.sampleRate),dt=buf.getChannelData(0);
+   for(let i=0;i<len;i++)dt[i]=Math.random()*2-1;
+   const src=c.createBufferSource();src.buffer=buf;
+   const f=c.createBiquadFilter();f.type=type;f.frequency.setValueAtTime(fc,t);f.Q.value=q;
+   if(slide)f.frequency.exponentialRampToValueAtTime(Math.max(60,fc+slide),t+d);
+   const gn=c.createGain();gn.gain.setValueAtTime(g,t);gn.gain.exponentialRampToValueAtTime(.0001,t+d);
+   src.connect(f).connect(gn).connect(master);src.start(t);src.stop(t+d);}
+ /* ---- 効果音 ---- */
+ function correct(){const t=ac().currentTime;
+   tone(880,t,.14,{type:"triangle",g:.3}); tone(1318.5,t+.13,.32,{type:"triangle",g:.3});
+   tone(1760,t+.13,.3,{type:"sine",g:.12});}
+ function wrong(){const t=ac().currentTime;
+   tone(196,t,.3,{type:"square",g:.16}); tone(185,t+.02,.3,{type:"square",g:.14});
+   tone(147,t+.28,.4,{type:"square",g:.15,slide:-40});}
+ function timeup(){const t=ac().currentTime; tone(660,t,.12,{type:"square",g:.15}); tone(440,t+.14,.3,{type:"square",g:.15,slide:-120});}
+ function tap(){const t=ac().currentTime; tone(1200,t,.05,{type:"sine",g:.08});}
+ function cheer(t,d=1.4,g=.16){ noise(t,d,{g,fc:900,q:.6,slide:500}); noise(t+.1,d*.8,{g:g*.7,fc:1600,q:.7}); }
+ function pop(t){ noise(t,.5,{g:.3,fc:300,q:.5,type:"lowpass",slide:-200}); noise(t+.02,.35,{g:.18,fc:2500,q:.8,slide:-1800});
+   for(let i=0;i<5;i++) tone(700+Math.random()*900,t+.05+i*.03,.4,{type:"sine",g:.05,slide:-300});}
+ function fanfare(){const t=ac().currentTime+.05, n=(f,st,d,g=.22)=>{tone(f,t+st,d,{type:"square",g:g*.6});tone(f*1.005,t+st,d,{type:"sawtooth",g:g*.35});};
+   const C=523.25,E=659.25,G=784,C2=1046.5;
+   n(C,0,.16);n(C,.2,.16);n(C,.4,.16);n(E,.6,.3);n(G,.95,.3);n(E,1.3,.18);n(G,1.5,.55,.26);n(C2,2.1,1.2,.3);
+   tone(C2*2,t+2.1,1.2,{type:"sine",g:.08});
+   [0,.6,1.5,2.1].forEach(st=>noise(t+st,.25,{g:.1,fc:5000,q:.5,type:"highpass"}));}
+ /* ---- BGM（1小節ずつ先行スケジュール）---- */
+ const P={
+  calm:{bar:3.2,play(t,b){const s=[261.6,329.6,392,523.25,392,329.6];
+    s.forEach((f,i)=>tone(f,t+i*.5,1.1,{type:"sine",g:.07,att:.08}));
+    tone(130.8,t,3.0,{type:"sine",g:.06,att:.3});}},
+  urgent:{bar:1.6,play(t,b){const bass=b%2?110:98;
+    for(let i=0;i<8;i++){tone(bass*(i%4===2?1.5:1),t+i*.2,.12,{type:"square",g:.09});}
+    for(let i=0;i<4;i++) noise(t+i*.4,.05,{g:.12,fc:6000,q:1,type:"highpass"});
+    tone(392+(b%4)*20,t,.1,{type:"triangle",g:.1}); tone(415,t+.8,.1,{type:"triangle",g:.1});}},
+  gloom:{bar:4,play(t,b){tone(98,t,3.8,{type:"sine",g:.1,att:.6}); tone(116.5,t+2,1.9,{type:"sine",g:.07,att:.5});
+    tone(196,t+1,2.5,{type:"sine",g:.045,att:.8}); if(b%2)noise(t+2.5,1.2,{g:.03,fc:400,q:.5,type:"lowpass"});}},
+  mild:{bar:3.2,play(t,b){const s=[329.6,392,440,392];
+    s.forEach((f,i)=>tone(f,t+i*.8,1.4,{type:"triangle",g:.06,att:.1}));
+    tone(164.8,t,3,{type:"sine",g:.06,att:.3}); tone(246.9,t+1.6,1.5,{type:"sine",g:.04,att:.2});}},
+  festive:{bar:2,play(t,b){const mel=[[523,659,784,659],[587,784,880,784]][b%2];
+    mel.forEach((f,i)=>tone(f,t+i*.5,.3,{type:"triangle",g:.12}));
+    [130.8,164.8,196].forEach((f,i)=>tone(f,t+i*.66,.5,{type:"sine",g:.08}));
+    noise(t,.08,{g:.1,fc:7000,type:"highpass"}); noise(t+1,.08,{g:.1,fc:7000,type:"highpass"});
+    if(b%4===0)cheer(t+.2,1.2,.07);}},
+  grand:{bar:2,play(t,b){const mel=[[523,659,784,1046],[880,784,659,784]][b%2];
+    mel.forEach((f,i)=>{tone(f,t+i*.5,.42,{type:"square",g:.07});tone(f/2,t+i*.5,.42,{type:"triangle",g:.08});});
+    tone(130.8,t,1.9,{type:"sine",g:.1,att:.1});
+    if(b%3===0)pop(t+Math.random()*1.2); if(b%4===1)cheer(t+.3,1.5,.1);}},
+  heaven:{bar:3.2,play(t,b){const harp=[523,659,784,1046,1318,1046,784,659];
+    harp.forEach((f,i)=>tone(f,t+i*.4,1.2,{type:"sine",g:.07,att:.02}));
+    [261.6,329.6,392].forEach(f=>tone(f,t,3.1,{type:"triangle",g:.05,att:.5}));
+    tone(2093,t+1.6,1.4,{type:"sine",g:.03,att:.4});}}
+ };
+ function startBGM(name){ stopBGM(); const p=P[name]; if(!p)return; ac();
+   bgm.name=name; bgm.barCount=0; bgm.nextBar=ctx.currentTime+.08;
+   const pump=()=>{ while(bgm.nextBar<ctx.currentTime+ .9){ p.play(bgm.nextBar,bgm.barCount++); bgm.nextBar+=p.bar; } };
+   pump(); bgm.timer=setInterval(pump,300);}
+ function stopBGM(){ if(bgm.timer){clearInterval(bgm.timer); bgm.timer=null; bgm.name=null;} }
+ return {ac,correct,wrong,timeup,tap,fanfare,cheer:( )=>cheer(ac().currentTime),pop:()=>pop(ac().currentTime),startBGM,stopBGM,now:()=>ac().currentTime};
+})();
+/* ============================================================
+   結果背景（0〜10点 / アニメ調SVG 11シーン）＋演出
+   ============================================================ */
+const VB='viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"';
+function grad(id,st){return `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${st.map(s=>`<stop offset="${s[0]}" stop-color="${s[1]}"/>`).join("")}</linearGradient>`;}
+const tomb=(x,y,s,c)=>`<g transform="translate(${x},${y}) scale(${s})" fill="${c}"><rect x="-16" y="-52" width="32" height="52" rx="9"/><rect x="-24" y="-4" width="48" height="10" rx="3"/><path d="M-1 -46 h2 v14 h-2z M-8 -39 h16 v2 h-16z" fill="#565b6b"/></g>`;
+const house=(x,y,s,wall,roof)=>`<g transform="translate(${x},${y}) scale(${s})"><rect x="-30" y="-30" width="60" height="34" fill="${wall}"/><path d="M-38 -30 L0 -56 L38 -30 Z" fill="${roof}"/><rect x="-8" y="-14" width="16" height="18" fill="#7a6a52"/><rect x="-24" y="-24" width="12" height="10" fill="#cfe3ee"/><rect x="12" y="-24" width="12" height="10" fill="#cfe3ee"/></g>`;
+const cloudP=(x,y,s,c,o=1)=>`<g transform="translate(${x},${y}) scale(${s})" fill="${c}" opacity="${o}"><ellipse cx="0" cy="0" rx="46" ry="20"/><ellipse cx="-30" cy="6" rx="30" ry="14"/><ellipse cx="32" cy="6" rx="32" ry="15"/><ellipse cx="4" cy="-12" rx="26" ry="14"/></g>`;
+const SCENES=[
+/* 0 墓場 */ s=>`<svg ${VB}><defs>${grad("g0",[[0,"#0d1020"],[.6,"#1a2033"],[1,"#232a3d"]])}</defs>
+<rect width="480" height="900" fill="url(#g0)"/>
+<circle cx="360" cy="140" r="52" fill="#c9cede" opacity=".85"/><circle cx="342" cy="128" r="46" fill="#10131f" opacity=".55"/>
+${cloudP(120,140,1.1,"#2a3147",.9)}${cloudP(390,220,.9,"#242b3e",.9)}
+<path d="M60 640 C40 560 90 520 84 430 M84 470 C120 450 130 420 128 400 M84 500 C60 480 40 470 36 440" stroke="#141824" stroke-width="14" fill="none" stroke-linecap="round"/>
+<rect y="620" width="480" height="280" fill="#171c2b"/>
+<path d="M0 640 Q120 610 240 632 T480 626 V900 H0 Z" fill="#1f2536"/>
+${tomb(110,720,1.2,"#3a4053")}${tomb(230,700,1,"#333a4c")}${tomb(330,740,1.4,"#3f4659")}${tomb(420,700,.9,"#2f3546")}${tomb(40,760,1,"#333a4c")}
+<path d="M60 800 l60 6 M200 820 l70 -4 M330 810 l60 8" stroke="#11141f" stroke-width="3" opacity=".9"/>
+<path d="M150 690 l30 40 l18 -26 M300 660 l-24 44" stroke="#0b0e18" stroke-width="2.5" fill="none"/>
+<text x="240" y="486" font-size="22" fill="#4a5268" text-anchor="middle" font-family="serif">R.I.P.</text></svg>`,
+/* 1 廃墟 */ s=>`<svg ${VB}><defs>${grad("g1",[[0,"#171522"],[.6,"#2a2536"],[1,"#38303f"]])}</defs>
+<rect width="480" height="900" fill="url(#g1)"/>
+<circle cx="120" cy="150" r="44" fill="#b9b4c4" opacity=".7"/>
+<g fill="#231f30"><path d="M40 900 V430 h90 l-14 60 h20 V900Z"/><path d="M200 900 V360 h110 l-30 40 h14 l-16 46 h30 V900Z"/><path d="M370 900 V470 h80 l-20 70 h18 V900Z"/></g>
+<g fill="#171422"><rect x="60" y="470" width="16" height="22"/><rect x="90" y="470" width="16" height="22"/><rect x="60" y="520" width="16" height="22"/><rect x="222" y="420" width="18" height="26"/><rect x="252" y="420" width="18" height="26"/><rect x="282" y="470" width="18" height="26"/><rect x="252" y="520" width="18" height="26"/><rect x="390" y="520" width="16" height="22"/><rect x="420" y="560" width="16" height="22"/></g>
+<rect y="740" width="480" height="160" fill="#221d2c"/>
+<path d="M0 760 Q140 730 260 752 T480 744 V900 H0Z" fill="#2b2536"/>
+<g fill="#191524"><ellipse cx="150" cy="790" rx="46" ry="14"/><ellipse cx="330" cy="810" rx="60" ry="16"/><rect x="118" y="760" width="22" height="24" transform="rotate(18 130 772)"/><rect x="320" y="778" width="26" height="20" transform="rotate(-12 333 788)"/></g>
+<path d="M110 560 l34 60 l-20 8 M300 600 l-26 52 M420 640 l16 40" stroke="#0f0c18" stroke-width="3" fill="none"/></svg>`,
+/* 2 スラム */ s=>`<svg ${VB}><defs>${grad("g2",[[0,"#231d2a"],[.55,"#3c3140"],[1,"#4d3f49"]])}</defs>
+<rect width="480" height="900" fill="url(#g2)"/>
+<circle cx="390" cy="130" r="40" fill="#cabfa8" opacity=".55"/>
+<g><path d="M0 620 h480 v280 H0Z" fill="#33293a"/>
+${[0,1,2,3,4].map(i=>`<g transform="translate(${i*100-10},${560+(i%2)*22})"><rect width="96" height="90" fill="${["#4a3b45","#54424a","#463742","#5b4750","#4a3b45"][i]}"/><path d="M-6 0 L48 -26 L102 0Z" fill="#332832"/><rect x="34" y="40" width="26" height="50" fill="#2a2130"/><rect x="10" y="18" width="20" height="16" fill="#e9c46a" opacity="${i%2?".85":".35"}"/></g>`).join("")}
+<path d="M20 540 L120 560 M120 560 L260 548 M260 548 L420 566" stroke="#221a28" stroke-width="2.5"/>
+<path d="M60 548 v-8 M180 552 v-9 M320 552 v-8" stroke="#221a28" stroke-width="3"/>
+<path d="M40 556 q10 8 22 2 M200 552 q12 9 24 2 M330 558 q10 8 22 2" stroke="#6b5a63" stroke-width="2" fill="none"/></g>
+<rect y="760" width="480" height="140" fill="#2b2233"/>
+<ellipse cx="140" cy="800" rx="40" ry="10" fill="#20182a"/><ellipse cx="360" cy="820" rx="52" ry="12" fill="#20182a"/>
+<path d="M80 700 l24 60 M400 690 l-16 70" stroke="#1c1524" stroke-width="3"/></svg>`,
+/* 3 ボロ小屋 */ s=>`<svg ${VB}><defs>${grad("g3",[[0,"#2c2a35"],[.55,"#4a4550"],[1,"#5c5359"]])}</defs>
+<rect width="480" height="900" fill="url(#g3)"/>
+<circle cx="110" cy="140" r="42" fill="#d3ccbb" opacity=".5"/>
+${cloudP(340,180,1,"#3b3844",.9)}
+<rect y="640" width="480" height="260" fill="#403a42"/>
+<path d="M0 660 Q140 632 280 652 T480 646 V900 H0Z" fill="#4c444b"/>
+<g transform="translate(240,560)"><rect x="-110" y="0" width="220" height="130" fill="#5f4a3b"/>
+<path d="M-130 0 L0 -78 L130 0 Z" fill="#463327"/>
+<path d="M-130 0 L0 -78 L130 0" stroke="#382a20" stroke-width="6" fill="none"/>
+<rect x="-30" y="46" width="56" height="84" fill="#3a2c22"/><path d="M-30 46 l56 84 M26 46 l-56 84" stroke="#54402f" stroke-width="3"/>
+<rect x="-92" y="30" width="42" height="36" fill="#2e3a45"/><path d="M-92 30 l42 36 M-50 30 l-42 36 M-71 30 v36 M-92 48 h42" stroke="#54402f" stroke-width="3"/>
+<path d="M-110 8 h60 M60 40 h44 M-40 120 h70" stroke="#4a3729" stroke-width="4"/>
+<path d="M40 -60 l14 30 l-10 2 l12 24" stroke="#241b14" stroke-width="3" fill="none"/></g>
+<path d="M60 720 q8 -22 4 -34 M80 726 q2 -20 -4 -32 M410 740 q8 -24 2 -36 M430 744 q0 -20 -6 -30" stroke="#6b5f52" stroke-width="3" fill="none"/>
+<path d="M120 780 l60 6 M300 800 l80 -4" stroke="#332d36" stroke-width="3"/></svg>`,
+/* 4 町外れ */ s=>`<svg ${VB}><defs>${grad("g4",[[0,"#a9c8dd"],[.55,"#cfe0e6"],[1,"#e7ecdf"]])}</defs>
+<rect width="480" height="900" fill="url(#g4)"/>
+<circle cx="380" cy="130" r="42" fill="#f6e7b2"/>
+${cloudP(120,150,1,"#ffffff",.95)}${cloudP(330,250,.8,"#f2f5f7",.9)}
+<path d="M0 560 Q120 500 260 540 T480 520 V620 H0Z" fill="#9db98a"/>
+<rect y="600" width="480" height="300" fill="#a7bc8b"/>
+<path d="M0 640 Q160 616 320 636 T480 630 V900 H0Z" fill="#b8c793"/>
+<path d="M210 900 C230 800 220 720 240 640 C260 720 250 800 270 900Z" fill="#cbb98f"/>
+<path d="M240 660 v230" stroke="#e6dcc0" stroke-width="4" stroke-dasharray="14 16"/>
+${house(110,620,.9,"#e8dcc6","#8a5f4d")}${house(400,600,.7,"#ded3c0","#6f7a8a")}
+<g stroke="#7d6a54" stroke-width="4"><path d="M40 560 v-40 M40 528 h18"/><path d="M460 570 v-44 M460 534 h-16"/></g>
+<path d="M60 500 q20 -30 44 0 M360 470 q18 -26 40 0" stroke="#87a06f" stroke-width="0" fill="#87a06f"/></svg>`,
+/* 5 住宅街 */ s=>`<svg ${VB}><defs>${grad("g5",[[0,"#8fc3e9"],[.6,"#c3e0f0"],[1,"#eef3ea"]])}</defs>
+<rect width="480" height="900" fill="url(#g5)"/>
+<circle cx="100" cy="120" r="44" fill="#fff0b8"/>
+${cloudP(320,140,1.05,"#ffffff")}${cloudP(160,240,.75,"#f4f9fc")}
+<rect y="600" width="480" height="300" fill="#b9c9a0"/>
+${house(80,600,1,"#f2e8d8","#b3543f")}${house(240,590,1.15,"#e9eef2","#41597a")}${house(400,600,1,"#f4e3c8","#7a8a52")}
+${house(160,650,.85,"#efe4cf","#8a5f4d")}${house(330,655,.9,"#e6ddcf","#a06a3f")}
+<rect y="700" width="480" height="60" fill="#9aa6ad"/><path d="M0 730 h480" stroke="#e8ecef" stroke-width="4" stroke-dasharray="20 18"/>
+<g fill="#6f8f5a"><circle cx="30" cy="590" r="26"/><rect x="26" y="600" width="8" height="26" fill="#7d6142"/><circle cx="455" cy="585" r="24"/><rect x="451" y="596" width="8" height="24" fill="#7d6142"/></g>
+<rect y="760" width="480" height="140" fill="#b9c9a0"/>
+<path d="M60 820 q16 -22 36 0 M340 830 q18 -24 40 0" fill="#a3b585"/></svg>`,
+/* 6 オフィス街 */ s=>`<svg ${VB}><defs>${grad("g6",[[0,"#7fb5e2"],[.6,"#bcd9ec"],[1,"#e4ecef"]])}</defs>
+<rect width="480" height="900" fill="url(#g6)"/>
+<circle cx="390" cy="110" r="40" fill="#fff3c0"/>
+${cloudP(140,130,.95,"#ffffff")}
+<g><rect x="30" y="330" width="110" height="420" fill="#5b7d9e"/>
+<rect x="170" y="250" width="130" height="500" fill="#6d8fb0"/>
+<rect x="330" y="380" width="110" height="370" fill="#547295"/>
+${[0,1,2,3,4,5,6].map(r=>[0,1,2].map(c=>`<rect x="${44+c*30}" y="${350+r*52}" width="18" height="26" fill="#d7e8f2"/>`).join("")).join("")}
+${[0,1,2,3,4,5,6,7].map(r=>[0,1,2].map(c=>`<rect x="${186+c*38}" y="${272+r*56}" width="22" height="30" fill="#e2eff7"/>`).join("")).join("")}
+${[0,1,2,3,4,5].map(r=>[0,1].map(c=>`<rect x="${348+c*44}" y="${400+r*56}" width="26" height="30" fill="#cfe2ee"/>`).join("")).join("")}</g>
+<rect y="750" width="480" height="150" fill="#9fa8ad"/>
+<rect y="750" width="480" height="16" fill="#c6cdd0"/>
+<path d="M0 830 h480" stroke="#e8ecee" stroke-width="4" stroke-dasharray="22 18"/>
+<g fill="#4f6b52"><circle cx="70" cy="740" r="22"/><rect x="66" y="748" width="8" height="20" fill="#6e5a43"/><circle cx="410" cy="740" r="22"/><rect x="406" y="748" width="8" height="20" fill="#6e5a43"/></g></svg>`,
+/* 7 表彰会場 */ s=>`<svg ${VB}><defs>${grad("g7",[[0,"#5a3550"],[.6,"#7a4262"],[1,"#93506c"]])}</defs>
+<rect width="480" height="900" fill="url(#g7)"/>
+<path d="M0 0 h480 v70 q-120 46 -240 46 T0 70Z" fill="#43263e"/>
+${[0,1,2,3,4,5,6,7].map(i=>`<path d="M${i*68-20} 60 l30 44 l30 -44" fill="${i%2?"#e9c46a":"#e76f51"}"/>`).join("")}
+<rect x="40" y="200" width="400" height="330" fill="#8f4a66" rx="8"/>
+${[0,1,2,3,4,5,6,7,8,9].map(i=>`<path d="M${52+i*40} 200 q10 165 0 330" stroke="#7c3f5a" stroke-width="10" fill="none"/>`).join("")}
+<rect y="530" width="480" height="370" fill="#3c2338"/>
+<rect x="60" y="560" width="360" height="34" fill="#5a3350" rx="6"/>
+<g transform="translate(240,470)"><rect x="-90" y="20" width="180" height="70" fill="#c9973f" rx="6"/><rect x="-90" y="20" width="180" height="12" fill="#e9c46a" rx="6"/>
+<text y="66" text-anchor="middle" font-size="30" font-family="serif" fill="#5a3550" font-weight="bold">1</text>
+<circle cy="-36" r="26" fill="#f2d5b8"/><path d="M-26 -36 a26 26 0 0 1 52 0 v10 h-52Z" fill="#4a3428"/>
+<path d="M-30 20 q0 -46 30 -46 q30 0 30 46Z" fill="#31558a"/><path d="M-14 -6 l14 26 l14 -26" fill="#fff"/></g>
+<circle cx="120" cy="620" r="14" fill="#f2d5b8"/><rect x="106" y="632" width="28" height="30" fill="#555f74" rx="6"/>
+<circle cx="360" cy="620" r="14" fill="#f2d5b8"/><rect x="346" y="632" width="28" height="30" fill="#6b4a58" rx="6"/>
+<circle cx="60" cy="640" r="14" fill="#f2d5b8"/><rect x="46" y="652" width="28" height="30" fill="#4a5a4d" rx="6"/>
+<circle cx="420" cy="644" r="14" fill="#f2d5b8"/><rect x="406" y="656" width="28" height="30" fill="#71566b" rx="6"/></svg>`,
+/* 8 豪華ホテル */ s=>`<svg ${VB}><defs>${grad("g8",[[0,"#3c2b4d"],[.5,"#5a3f63"],[1,"#7a5670"]])}
+<radialGradient id="glow8"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient></defs>
+<rect width="480" height="900" fill="url(#g8)"/>
+<g transform="translate(240,140)"><circle r="90" fill="url(#glow8)"/>
+<path d="M0 -80 v30" stroke="#caa54a" stroke-width="4"/>
+<path d="M-60 -10 q60 60 120 0 M-40 -30 q40 44 80 0 M-20 -44 q20 26 40 0" stroke="#e9c46a" stroke-width="5" fill="none"/>
+${[-60,-40,-20,0,20,40,60].map(x=>`<circle cx="${x}" cy="${Math.abs(x)*-0.28+22}" r="5" fill="#ffe9a8"/>`).join("")}</g>
+${[80,400].map(x=>`<g transform="translate(${x},300)"><path d="M-46 260 v-200 a46 46 0 0 1 92 0 v200Z" fill="#31243f"/><path d="M-38 260 v-196 a38 38 0 0 1 76 0 v196Z" fill="#54406b"/></g>`).join("")}
+<rect y="560" width="480" height="340" fill="#4a2f45"/>
+<path d="M0 560 h480" stroke="#caa54a" stroke-width="6"/>
+<rect x="150" y="600" width="180" height="70" rx="10" fill="#6b4460"/><rect x="140" y="596" width="200" height="14" rx="7" fill="#e9c46a"/>
+${[0,1,2].map(i=>`<g transform="translate(${180+i*60},640)"><path d="M-10 0 h20 l-6 22 h-8Z" fill="#d8e6f0" opacity=".9"/><rect x="-2" y="22" width="4" height="12" fill="#d8e6f0"/></g>`).join("")}
+<circle cx="90" cy="700" r="15" fill="#f2d5b8"/><path d="M74 716 q16 -14 32 0 l-4 44 h-24Z" fill="#2c2438"/>
+<circle cx="390" cy="700" r="15" fill="#f2d5b8"/><path d="M374 716 q16 -12 32 0 l-2 44 h-28Z" fill="#8a3a52"/>
+<circle cx="240" cy="720" r="15" fill="#f2d5b8"/><path d="M224 736 q16 -14 32 0 l-4 44 h-24Z" fill="#3a4a6b"/></svg>`,
+/* 9 王宮 */ s=>`<svg ${VB}><defs>${grad("g9",[[0,"#2c1f4a"],[.55,"#4a3268"],[1,"#6b4a78"]])}</defs>
+<rect width="480" height="900" fill="url(#g9)"/>
+${[60,180,300,420].map((x,i)=>`<g transform="translate(${x},120)"><rect x="-26" y="0" width="52" height="360" fill="#8a76a8"/><rect x="-34" y="-14" width="68" height="18" fill="#a892c2" rx="4"/><rect x="-34" y="356" width="68" height="18" fill="#a892c2" rx="4"/><path d="M-26 10 v340 M0 6 v348 M26 10 v340" stroke="#75639a" stroke-width="5"/></g>`).join("")}
+<path d="M0 96 h480 v30 H0Z" fill="#5a4480"/>
+${[0,1,2,3,4,5].map(i=>`<circle cx="${40+i*80}" cy="88" r="10" fill="#e9c46a"/>`).join("")}
+<rect y="520" width="480" height="380" fill="#3a2b56"/>
+<path d="M140 520 h200 V900 H100Z" fill="#a3263f"/>
+<path d="M160 520 h160 V900 H140Z" fill="#c23a52"/>
+<path d="M150 560 h180 M145 620 h190 M140 700 h200 M135 800 h210" stroke="#e9c46a" stroke-width="3" opacity=".7"/>
+<g transform="translate(240,430)"><rect x="-70" y="0" width="140" height="90" fill="#7a5a2f" rx="8"/><path d="M-58 0 v-90 q58 -34 116 0 v90" fill="#a3263f" stroke="#e9c46a" stroke-width="6"/><circle cy="-56" r="12" fill="#e9c46a"/></g>
+<path d="M0 520 h480" stroke="#e9c46a" stroke-width="5"/></svg>`,
+/* 10 神殿 */ s=>`<svg ${VB}><defs>${grad("g10",[[0,"#ffe9b0"],[.4,"#ffd98c"],[.75,"#f7c8de"],[1,"#cfe6f5"]])}
+<radialGradient id="sun10" cx=".5" cy=".28" r=".6"><stop offset="0" stop-color="#fffbe0"/><stop offset="1" stop-color="#fffbe0" stop-opacity="0"/></radialGradient></defs>
+<rect width="480" height="900" fill="url(#g10)"/>
+<rect width="480" height="900" fill="url(#sun10)"/>
+<g opacity=".85">${["#e05a5a","#e69a3f","#e9c46a","#7db56b","#5b8fc9","#7a5fb0"].map((c,i)=>`<path d="M-40 ${420-i*16} q280 -190 560 0" stroke="${c}" stroke-width="12" fill="none" opacity=".55"/>`).join("")}</g>
+<g transform="translate(240,470)">
+<path d="M-150 60 h300 l-24 -28 h-252Z" fill="#f5ead2"/>
+${[-110,-55,0,55,110].map(x=>`<g><rect x="${x-13}" y="-108" width="26" height="80" fill="#efe2c4"/><rect x="${x-18}" y="-116" width="36" height="10" fill="#e2d2ac"/><rect x="${x-18}" y="-30" width="36" height="10" fill="#e2d2ac"/></g>`).join("")}
+<path d="M-160 -116 L0 -190 L160 -116Z" fill="#f7edd6" stroke="#dcc794" stroke-width="4"/>
+<path d="M0 -150 l12 24 h-24Z" fill="#e9c46a"/>
+<rect x="-150" y="70" width="300" height="16" fill="#efe2c4"/></g>
+${cloudP(90,600,1.5,"#ffffff")}${cloudP(370,640,1.7,"#fdfaf2")}${cloudP(230,700,2,"#ffffff")}${cloudP(60,780,1.6,"#f4f6fa")}${cloudP(420,800,1.8,"#ffffff")}
+<g transform="translate(240,330)"><path d="M-34 30 q-14 -40 10 -58 q-24 4 -22 -18 q18 10 26 2 q-6 -20 20 -30 q26 10 20 30 q8 8 26 -2 q2 22 -22 18 q24 18 10 58Z" fill="#f0b429" stroke="#c98d1b" stroke-width="4"/>
+<rect x="-40" y="30" width="80" height="14" rx="4" fill="#c98d1b"/><rect x="-24" y="44" width="48" height="26" rx="4" fill="#f0b429"/>
+<circle cx="-20" cy="-16" r="5" fill="#fff" opacity=".8"/></g></svg>`];
+const SCORE_META=[
+ {t:"墓場",title:"墓場からの出発",msg:"……ここから登っていくしかない。基本の読みから、もう一度。",bgm:"gloom",tier:0},
+ {t:"廃墟",title:"廃墟にひとり",msg:"崩れた壁も、積み直せば家になる。復習あるのみ。",bgm:"gloom",tier:0},
+ {t:"スラム",title:"路地裏の下積み",msg:"まだ灯りは小さい。似た読みのひっかけに注意しよう。",bgm:"gloom",tier:0},
+ {t:"ボロ小屋",title:"雨漏りの小屋",msg:"屋根はボロでも、机はある。解説を読み返して次へ。",bgm:"gloom",tier:0},
+ {t:"町外れ",title:"町外れの一軒家",msg:"半分近く読めている。濁点・長音を意識すれば伸びる。",bgm:"mild",tier:1},
+ {t:"住宅街",title:"普通の住宅街",msg:"ちょうど半分。合格ラインはもう見えている。",bgm:"mild",tier:1},
+ {t:"オフィス街",title:"オフィス街デビュー",msg:"実力は十分。取りこぼした問題だけ復習しよう。",bgm:"mild",tier:1},
+ {t:"表彰会場",title:"表彰台に立つ",msg:"見事な成績！ 会場から拍手が送られている。",bgm:"festive",tier:2},
+ {t:"豪華ホテル",title:"祝賀パーティー",msg:"シャンデリアの下で乾杯。あと一歩で頂点だ。",bgm:"festive",tier:2},
+ {t:"王宮",title:"王宮に招かれる",msg:"惜しくも満点ならず。それでも王座は目の前に。",bgm:"grand",tier:3},
+ {t:"雲の上の神殿",title:"チャンピオン！",msg:"満点達成！ 黄金の光と虹があなたを祝福している。",bgm:"heaven",tier:4}];
+/* ============================================================
+   結果演出（雨・霧・カラス／紙吹雪・旗／花火・スポットライト／
+   黄金の光・王冠 など、点数帯ごとに切替）
+   ============================================================ */
+let fxTimers=[];
+function clearFx(){fxTimers.forEach(t=>clearInterval(t));fxTimers=[];document.getElementById("result-fx").innerHTML="";}
+function fxAdd(html){document.getElementById("result-fx").insertAdjacentHTML("beforeend",html);}
+function applyResultFx(score){
+ clearFx(); const meta=SCORE_META[score], fx=document.getElementById("result-fx");
+ if(meta.tier===0){ /* 0-3点: 雨・霧・カラス・ひび割れ */
+   for(let i=0;i<38;i++)fxAdd(`<div class="rain-drop" style="left:${Math.random()*100}%;animation-duration:${.7+Math.random()*.6}s;animation-delay:${Math.random()*1.5}s"></div>`);
+   for(let i=0;i<3;i++)fxAdd(`<div class="fog-band" style="top:${45+i*16}%;left:-30%;animation-duration:${9+i*4}s;opacity:${.8-i*.15}"></div>`);
+   for(let i=0;i<3;i++)fxAdd(`<div class="crow-fly" style="top:${10+i*9}%;animation-duration:${11+i*5}s;animation-delay:${i*2.5}s">
+     <svg width="46" height="22" viewBox="0 0 46 22"><path d="M2 12 Q12 0 23 10 Q34 0 44 12 Q34 8 23 16 Q12 8 2 12Z" fill="#0c0f18"/></svg></div>`);
+   fxAdd(`<svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 480 900" preserveAspectRatio="xMidYMid slice">
+     <g stroke="rgba(8,10,16,.55)" stroke-width="2.5" fill="none">
+     <path d="M0 0 l70 90 l-30 24 l52 70"/><path d="M480 120 l-64 60 l22 30 l-56 44"/><path d="M240 900 l20 -90 l-32 -26 l24 -60"/></g></svg>`);
+ }else if(meta.tier===2){ /* 7-8点: 紙吹雪・旗・キラキラ（歓声はBGM側） */
+   const cols=["#e76f51","#e9c46a","#2a9d8f","#5b8fc9","#e05a8a","#f4f1de"];
+   for(let i=0;i<46;i++)fxAdd(`<div class="confetti-p" style="left:${Math.random()*100}%;background:${cols[i%6]};animation-duration:${2.6+Math.random()*2.4}s;animation-delay:${Math.random()*3}s;transform:rotate(${Math.random()*360}deg)"></div>`);
+   for(let i=0;i<10;i++)fxAdd(`<div class="sparkle" style="left:${Math.random()*92+2}%;top:${Math.random()*55+5}%;animation-duration:${1.2+Math.random()}s;animation-delay:${Math.random()*2}s">✦</div>`);
+   fxAdd(`<svg style="position:absolute;top:0;left:0;width:100%" viewBox="0 0 480 90" preserveAspectRatio="none">
+     <path d="M0 10 Q120 55 240 26 T480 20" stroke="#caa54a" stroke-width="3" fill="none"/>
+     ${Array.from({length:9},(_,i)=>`<path d="M${20+i*52} ${18+Math.sin(i)*10} l14 26 l14 -28Z" fill="${cols[i%6]}"/>`).join("")}</svg>`);
+ }else if(meta.tier===3){ /* 9点: 花火・スポットライト・観客 */
+   fxAdd(`<div class="spotlight-beam" style="left:6%"></div><div class="spotlight-beam" style="right:6%;animation-delay:-2.5s"></div>`);
+   for(let i=0;i<8;i++)fxAdd(`<div class="sparkle" style="left:${Math.random()*92}%;top:${Math.random()*40+4}%;animation-duration:1.4s;animation-delay:${Math.random()*2}s">✦</div>`);
+   const burst=()=>{const x=8+Math.random()*84,y=6+Math.random()*30,c=["#ffd166","#ef6f6c","#7bd389","#6fb3e0","#e9a6ff"][Math.floor(Math.random()*5)];
+     let g='<g>'; for(let a=0;a<12;a++){const r=34+Math.random()*22,rad=a/12*6.283;
+       g+=`<circle cx="${Math.cos(rad)*r}" cy="${Math.sin(rad)*r}" r="3.2" fill="${c}"><animate attributeName="opacity" from="1" to="0" dur="1.1s" fill="freeze"/><animate attributeName="r" from="1" to="4" dur="1.1s" fill="freeze"/></circle>`;}
+     g+=`</g>`;
+     const el=document.createElement("div"); el.style.cssText=`position:absolute;left:${x}%;top:${y}%`;
+     el.innerHTML=`<svg width="130" height="130" viewBox="-65 -65 130 130">${g}</svg>`;
+     fx.appendChild(el); Snd.pop(); setTimeout(()=>el.remove(),1300);};
+   burst(); fxTimers.push(setInterval(burst,1400));
+ }else if(meta.tier===4){ /* 10点: 黄金の光・虹・王冠・祝福の光 */
+   fxAdd(`<svg class="ray-spin" style="position:absolute;left:50%;top:26%;width:150vw;height:150vw;margin-left:-75vw;margin-top:-75vw;opacity:.5" viewBox="-100 -100 200 200">
+     ${Array.from({length:12},(_,i)=>`<path d="M0 0 L${Math.cos(i/12*6.283)*100*0.9-6} ${Math.sin(i/12*6.283)*100*0.9} L${Math.cos(i/12*6.283)*100*0.9+6} ${Math.sin(i/12*6.283)*100*0.9}Z" fill="#ffdf8a"/>`).join("")}</svg>`);
+   for(let i=0;i<22;i++)fxAdd(`<div class="sparkle" style="left:${Math.random()*94}%;top:${Math.random()*80}%;animation-duration:${1+Math.random()}s;animation-delay:${Math.random()*2.2}s;color:#ffd75e">✦</div>`);
+   for(let i=0;i<18;i++)fxAdd(`<div class="rain-drop" style="left:${Math.random()*100}%;background:linear-gradient(rgba(255,225,150,0),rgba(255,225,150,.8));animation-duration:${1.6+Math.random()}s;animation-delay:${Math.random()*2}s"></div>`);
+   fxAdd(`<div class="crown-drop" style="top:9%"><svg width="96" height="72" viewBox="0 0 96 72">
+     <path d="M10 54 L4 18 L28 36 L48 8 L68 36 L92 18 L86 54Z" fill="#f4c430" stroke="#c98d1b" stroke-width="4" stroke-linejoin="round"/>
+     <rect x="8" y="54" width="80" height="12" rx="4" fill="#c98d1b"/>
+     <circle cx="4" cy="16" r="5" fill="#ef6f6c"/><circle cx="48" cy="6" r="6" fill="#6fb3e0"/><circle cx="92" cy="16" r="5" fill="#7bd389"/></svg></div>`);
+ }
+}
+
+/* ============================================================
+   学習記録（この端末のブラウザに保存 / 保存不可の環境では
+   セッション中のみ記憶するフォールバック）
+   ============================================================ */
+const STORE_KEY="kanji_no_michi_stats_v1";
+let MEM_STATS=null;
+function loadStats(){
+  try{const s=localStorage.getItem(STORE_KEY); if(s)return JSON.parse(s);}catch(e){}
+  return MEM_STATS||{history:{},q:{}};
+}
+function saveStats(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(STATS)); return;}catch(e){}
+  MEM_STATS=STATS;
+}
+let STATS=loadStats();
+if(!STATS.history)STATS.history={}; if(!STATS.q)STATS.q={};
+
+/* 全問題の索引（問題ID → 正解読み・レベル） */
+function qWord(cat,item){return cat==="bun"?item.s.match(/【(.+?)】/)[1]:item.q;}
+function qid(lv,cat,item){return lv+"|"+cat+"|"+qWord(cat,item);}
+const ALLQ=[],QINDEX={};
+["N5","N4","N3","N2","N1"].forEach(lv=>{
+  ["kanji","jukugo","bun"].forEach(cat=>{
+    DATA[lv][cat].forEach(item=>{
+      const o={lv,cat,item}; ALLQ.push(o);
+      QINDEX[qid(lv,cat,item)]={word:qWord(cat,item),read:item.c[item.a],lv,cat};
+    });
+  });
+});
+/* 一度でも間違えたことのある問題のプール */
+function weakPool(){return ALLQ.filter(o=>{const st=STATS.q[qid(o.lv,o.cat,o.item)];return st&&st.w>0;});}
+/* 誤答率が高いほど選ばれやすい重み付き抽選（重複なし） */
+function weakSample(n){
+  let pool=weakPool().map(o=>{const st=STATS.q[qid(o.lv,o.cat,o.item)];
+    return {o,wt:(st.w+1)/(st.c+st.w+2)};});
+  const out=[];
+  while(out.length<n && pool.length){
+    const total=pool.reduce((s,p)=>s+p.wt,0);
+    let r=Math.random()*total, idx=0;
+    for(let i=0;i<pool.length;i++){r-=pool[i].wt; if(r<=0){idx=i;break;}}
+    out.push(pool[idx].o); pool.splice(idx,1);
+  }
+  return out;
+}
+
+/* ============================================================
+   ゲーム進行
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const LEVELS=["N5","N4","N3","N2","N1"];
+const TIME_LIMIT=15;
+let G={level:null,qs:[],idx:0,score:0,results:[],timer:null,left:TIME_LIMIT,locked:false};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function pick(arr,n){return shuffle(arr).slice(0,n);}
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(id).classList.add("active");}
+
+/* --- スタート画面 --- */
+const WEAK_UNLOCK=10; // 間違えた問題がこの数たまると苦手モード解放
+function updateWeakBtn(){
+ const n=weakPool().length, b=$("btn-weak");
+ if(n>=WEAK_UNLOCK){
+   b.disabled=false;
+   b.innerHTML=`苦手問題に挑戦<span class="mode-hint">これまでに間違えた ${n}問 から出題（間違いが多い問題ほど出やすい）</span>`;
+ }else{
+   b.disabled=true;
+   b.innerHTML=`苦手問題に挑戦（あと${WEAK_UNLOCK-n}問で解放）<span class="mode-hint">間違えた問題が${WEAK_UNLOCK}問たまると挑戦できます（現在 ${n}問）</span>`;
+ }
+}
+function showStart(){updateWeakBtn(); show("scr-start");}
+(function initStart(){
+ const list=$("level-list");
+ LEVELS.forEach(lv=>{
+  const b=document.createElement("button"); b.className="level-btn";
+  b.innerHTML=`<span class="level-badge">${lv}</span><span><div class="lv-name">JLPT ${lv} コース</div><div class="lv-hint">${LEVEL_INFO[lv]}</div></span>`;
+  b.onclick=()=>{Snd.tap();startSet(lv);};
+  list.appendChild(b);});
+ $("btn-weak").onclick=()=>{Snd.tap();startWeakSet();};
+ $("btn-records").onclick=()=>{Snd.tap();renderRecords();show("scr-records");};
+ updateWeakBtn();
+ // 開始前BGM：最初のタッチで再生開始（ブラウザの自動再生制限のため）
+ const kick=()=>{Snd.startBGM("calm");document.removeEventListener("pointerdown",kick);};
+ document.addEventListener("pointerdown",kick,{once:true});
+})();
+
+/* --- セット開始（漢字3・熟語5・短文2＝計10問／毎回ランダム） --- */
+function startSet(level){
+ const d=DATA[level];
+ G={level,mode:"normal",idx:0,score:0,results:[],timer:null,left:TIME_LIMIT,locked:false,
+    qs:[...pick(d.kanji,3).map(q=>({...q,cat:"kanji",lv:level})),
+        ...pick(d.jukugo,5).map(q=>({...q,cat:"jukugo",lv:level})),
+        ...pick(d.bun,2).map(q=>({...q,cat:"bun",lv:level}))]};
+ const badge=$("q-level"); badge.textContent=level; badge.classList.remove("weak");
+ renderQuestion();
+ show("scr-quiz");
+ Snd.startBGM("urgent"); // 出題中は追い立てるBGM
+}
+/* 苦手克服モード：誤答率で重み付けした10問 */
+function startWeakSet(){
+ const qs=weakSample(10).map(o=>({...o.item,cat:o.cat,lv:o.lv}));
+ if(qs.length<10){updateWeakBtn();return;}
+ G={level:"苦手",mode:"weak",idx:0,score:0,results:[],timer:null,left:TIME_LIMIT,locked:false,qs};
+ const badge=$("q-level"); badge.textContent="苦手"; badge.classList.add("weak");
+ renderQuestion();
+ show("scr-quiz");
+ Snd.startBGM("urgent");
+}
+function renderProgress(){
+ const p=$("q-progress"); p.innerHTML="";
+ for(let i=0;i<10;i++){const el=document.createElement("i");
+  if(i<G.results.length)el.className=G.results[i]?"done-ok":"done-ng";
+  else if(i===G.idx)el.className="now";
+  p.appendChild(el);}
+}
+const CAT_LABEL={kanji:"漢 字",jukugo:"熟 語",bun:"短 文"};
+function renderQuestion(){
+ const q=G.qs[G.idx]; G.locked=false;
+ renderProgress();
+ $("q-category").textContent=CAT_LABEL[q.cat]+(G.mode==="weak"?"｜"+q.lv:"");
+ const card=$("q-card");
+ if(q.cat==="bun"){
+   card.innerHTML=`<div class="q-sentence">${q.s.replace(/【(.+?)】/,'<span class="target">$1</span>')}</div>`;
+   $("q-ask").textContent="下線部の読み方はどれ？";
+ }else{
+   card.innerHTML=`<div class="${q.cat==="kanji"?"q-kanji":"q-jukugo"}">${q.q}</div>`;
+   $("q-ask").textContent="読み方はどれ？";
+ }
+ // 選択肢をシャッフルして表示
+ const order=shuffle([0,1,2,3]); q._order=order;
+ const box=$("choices"); box.innerHTML="";
+ order.forEach((ci,i)=>{const b=document.createElement("button");b.className="choice-btn";
+   b.innerHTML=`<span class="cnum">${i+1}</span>${q.c[ci]}`;
+   b.onclick=()=>answer(ci,q.c[ci]); box.appendChild(b);});
+ startTimer();
+}
+function startTimer(){
+ stopTimer(); G.left=TIME_LIMIT;
+ const ring=$("timer-ring"),num=$("timer-num"),CIRC=138.2;
+ num.textContent=TIME_LIMIT; num.classList.remove("alert");
+ ring.setAttribute("stroke-dashoffset",0); ring.setAttribute("stroke","#2b3a52");
+ const t0=performance.now();
+ G.timer=setInterval(()=>{
+  const el=(performance.now()-t0)/1000, rest=Math.max(0,TIME_LIMIT-el);
+  G.left=rest; num.textContent=Math.ceil(rest);
+  ring.setAttribute("stroke-dashoffset",CIRC*(1-rest/TIME_LIMIT));
+  if(rest<=5){num.classList.add("alert");ring.setAttribute("stroke","#b6493f");}
+  if(rest<=0){stopTimer(); onTimeout();}
+ },100);
+}
+function stopTimer(){if(G.timer){clearInterval(G.timer);G.timer=null;}}
+function onTimeout(){ if(G.locked)return; G.locked=true; Snd.stopBGM(); Snd.timeup(); judge(false,null,true); }
+function answer(ci,text){ if(G.locked)return; G.locked=true; stopTimer(); Snd.stopBGM();
+ const ok=(ci===G.qs[G.idx].a); if(ok)Snd.correct(); else Snd.wrong();
+ judge(ok,text,false);}
+
+/* --- 正誤判定＋解説画面（時間制限なし） --- */
+function judge(ok,pickedText,timeout){
+ const q=G.qs[G.idx];
+ G.results.push(ok); if(ok)G.score++;
+ /* --- この問題の成績を記録 --- */
+ const id=qid(q.lv,q.cat,q);
+ const st=STATS.q[id]||(STATS.q[id]={c:0,w:0,r:[]});
+ if(ok)st.c++; else st.w++;
+ st.r.push(ok?1:0); if(st.r.length>6)st.r=st.r.slice(-6);
+ saveStats();
+ $("judge-mark").innerHTML= ok
+  ?`<svg width="118" height="118" viewBox="0 0 118 118"><circle cx="59" cy="59" r="46" fill="none" stroke="#4e7a5a" stroke-width="13"/></svg>`
+  :`<svg width="118" height="118" viewBox="0 0 118 118"><path d="M26 26 L92 92 M92 26 L26 92" stroke="#b6493f" stroke-width="13" stroke-linecap="round"/></svg>`;
+ const jw=$("judge-word"); jw.textContent= ok?"正 解":(timeout?"時間切れ":"不正解");
+ jw.className="judge-word "+(ok?"ok":"ng");
+ const word=q.cat==="bun"?q.s.match(/【(.+?)】/)[1]:q.q;
+ $("judge-answer").innerHTML=`<span class="ja-word">${word}</span>　＝　<span class="ja-read">${q.c[q.a]}</span>`;
+ $("expl-text").textContent=q.e;
+ $("your-pick").textContent = ok?"":(timeout?"時間内に答えられませんでした。":`あなたの答え：${pickedText}`);
+ /* --- 回答履歴の表示 --- */
+ const total=st.c+st.w;
+ if(total<=1){
+   $("q-history").innerHTML="この問題は今回が<b>初挑戦</b>です";
+ }else{
+   const rate=Math.round(st.c/total*100);
+   const marks=st.r.map(v=>v?'<span class="h-ok">○</span>':'<span class="h-ng">×</span>').join("");
+   $("q-history").innerHTML=`この問題のこれまでの成績（今回を含む）<br><span class="h-ok">正解 ${st.c}回</span> ／ <span class="h-ng">まちがい ${st.w}回</span>（正答率 ${rate}%）　直近：${marks}`;
+ }
+ $("next-btn").textContent = (G.idx===9)?"結果を見る":"次の問題へ";
+ show("scr-judge");
+}
+$("next-btn").onclick=()=>{Snd.tap();
+ if(G.idx<9){G.idx++;renderQuestion();show("scr-quiz");Snd.startBGM("urgent");}
+ else showResult();};
+
+/* --- 結果画面（得点に応じた背景・BGM・演出） --- */
+function showResult(){
+ const s=G.score, meta=SCORE_META[s];
+ /* --- スコア履歴を保存 --- */
+ const key=G.mode==="weak"?"苦手":G.level;
+ (STATS.history[key]=STATS.history[key]||[]).push({d:Date.now(),s});
+ if(STATS.history[key].length>30)STATS.history[key]=STATS.history[key].slice(-30);
+ saveStats();
+ $("result-bg").innerHTML=SCENES[s](s);
+ $("r-level").textContent=(G.mode==="weak"?"苦手克服チャレンジの結果":`JLPT ${G.level} の結果`)+` ―「${meta.t}」`;
+ $("r-score").textContent=s;
+ $("r-title").textContent=meta.title;
+ $("r-msg").textContent=meta.msg;
+ $("btn-retry").textContent=G.mode==="weak"?"リトライ（苦手問題にもう一度挑戦）":"リトライ（同じレベルに再挑戦）";
+ applyResultFx(s);
+ show("scr-result");
+ Snd.stopBGM();
+ if(s===10){Snd.fanfare(); setTimeout(()=>Snd.startBGM("heaven"),3400);} // 豪華なファンファーレ→天上のBGM
+ else Snd.startBGM(meta.bgm);
+}
+$("btn-retry").onclick=()=>{Snd.tap();clearFx();
+ if(G.mode==="weak")startWeakSet(); else startSet(G.level);};   // 同じモードでもう一度
+$("btn-top").onclick=()=>{Snd.tap();clearFx();Snd.startBGM("calm");showStart();};
+$("btn-quit").onclick=()=>{Snd.tap();clearFx();Snd.stopBGM();show("scr-end");};
+$("btn-restart").onclick=()=>{Snd.tap();Snd.startBGM("calm");showStart();};
+
+
+/* ============================================================
+   学習記録画面
+   ============================================================ */
+function renderRecords(){
+ const body=$("rec-body");
+ let sumC=0,sumW=0;
+ Object.values(STATS.q).forEach(st=>{sumC+=st.c;sumW+=st.w;});
+ const totalAns=sumC+sumW;
+ if(totalAns===0){
+   body.innerHTML=`<div class="rec-card"><div class="rec-empty">まだ記録がありません。<br>クイズに挑戦すると、ここに成績が表示されます。</div></div>`;
+   return;
+ }
+ let h=`<div class="rec-card"><h3>ぜんたい</h3><div class="rec-total">
+   <div><div class="num">${totalAns}</div><div class="lbl">回答した問題</div></div>
+   <div><div class="num">${Math.round(sumC/totalAns*100)}<small style="font-size:14px">%</small></div><div class="lbl">正答率</div></div>
+   <div><div class="num">${weakPool().length}</div><div class="lbl">苦手な問題</div></div>
+ </div></div>`;
+ /* レベル別スコア履歴 */
+ h+=`<div class="rec-card"><h3>スコアの履歴</h3>`;
+ let any=false;
+ [...LEVELS,"苦手"].forEach(k=>{
+   const hist=STATS.history[k]||[]; if(!hist.length)return; any=true;
+   const scores=hist.map(x=>x.s);
+   const best=Math.max(...scores);
+   const avg=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+   const recent=scores.slice(-8).join("→");
+   h+=`<div class="rec-row"><span class="r-lv">${k}</span>
+       <span class="r-main">${hist.length}回 ／ 最高${best}点 ／ 平均${avg}点</span>
+       <span class="r-recent">${recent}</span></div>`;
+ });
+ if(!any)h+=`<div class="rec-empty">セットを最後まで解くと記録されます。</div>`;
+ h+=`</div>`;
+ /* 苦手ワースト5 */
+ const worst=Object.entries(STATS.q)
+   .filter(([,st])=>st.w>0)
+   .map(([id,st])=>({id,st,rate:st.c/(st.c+st.w)}))
+   .sort((a,b)=>a.rate-b.rate || b.st.w-a.st.w)
+   .slice(0,5);
+ if(worst.length){
+   h+=`<div class="rec-card"><h3>にがてワースト${worst.length}</h3>`;
+   worst.forEach(({id,st,rate})=>{
+     const info=QINDEX[id]; if(!info)return;
+     h+=`<div class="weak-item"><span class="w-word">${info.word}</span>
+         <span class="w-read">${info.read}</span><span style="font-size:11px;color:#b0a692">${info.lv}</span>
+         <span class="w-stat">×${st.w} ○${st.c}（${Math.round(rate*100)}%）</span></div>`;
+   });
+   h+=`</div>`;
+ }
+ body.innerHTML=h;
+}
+let clearArmed=false;
+$("btn-clear").onclick=()=>{Snd.tap();
+ if(!clearArmed){clearArmed=true;$("btn-clear").textContent="もう一度押すと本当に消去します";
+   setTimeout(()=>{clearArmed=false;$("btn-clear").textContent="記録をすべて消去する";},4000);
+   return;}
+ STATS={history:{},q:{}}; saveStats();
+ clearArmed=false; $("btn-clear").textContent="記録をすべて消去する";
+ renderRecords();
+};
+$("btn-rec-back").onclick=()=>{Snd.tap();showStart();};
+
+/* PWA: ホーム画面追加・オフライン起動用（https配信時のみ有効） */
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
