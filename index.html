@@ -194,6 +194,7 @@ h1.title{font-family:var(--serif); font-size:34px; letter-spacing:.14em; color:v
 .mode-btn.weak{border-color:var(--shu); color:var(--shu)}
 .mode-btn.weak:disabled{opacity:.55}
 .mode-btn .mode-hint{display:block; font-size:11px; font-weight:600; color:#9a9182; margin-top:3px; letter-spacing:.02em}
+.en-sub{display:block; font-size:11px; font-weight:600; opacity:.72; margin-top:2px; letter-spacing:.05em}
 .q-level.weak{background:var(--shu)}
 /* ---------- 解説画面: 回答履歴 ---------- */
 .q-history{
@@ -260,8 +261,8 @@ h1.title{font-family:var(--serif); font-size:34px; letter-spacing:.14em; color:v
     <p class="start-desc">漢字・熟語・短文の読みを四択で答える練習帳。<br>1セット10問、制限時間は各15秒。</p>
     <div class="level-list" id="level-list"></div>
     <div class="top-extra">
-      <button class="mode-btn weak" id="btn-weak">苦手問題に挑戦</button>
-      <button class="mode-btn" id="btn-records">学習記録を見る</button>
+      <button class="mode-btn weak" id="btn-weak">苦手問題に挑戦<span class="en-sub">Weak Question Challenge</span></button>
+      <button class="mode-btn" id="btn-records">学習記録を見る<span class="en-sub">View Learning Records</span></button>
     </div>
     <p class="sound-note">♪ 音が出ます（BGM・効果音）</p>
   </section>
@@ -309,9 +310,9 @@ h1.title{font-family:var(--serif); font-size:34px; letter-spacing:.14em; color:v
         <div class="result-msg" id="r-msg"></div>
       </div>
       <div class="result-btns">
-        <button class="r-btn primary" id="btn-retry">リトライ（同じレベルに再挑戦）</button>
-        <button class="r-btn" id="btn-top">トップに戻る</button>
-        <button class="r-btn" id="btn-quit">終了する</button>
+        <button class="r-btn primary" id="btn-retry">リトライ（同じレベルに再挑戦）<span class="en-sub">Retry (same level)</span></button>
+        <button class="r-btn" id="btn-top">トップに戻る<span class="en-sub">Back to Top</span></button>
+        <button class="r-btn" id="btn-quit">終了する<span class="en-sub">Exit</span></button>
       </div>
     </div>
   </section>
@@ -322,8 +323,8 @@ h1.title{font-family:var(--serif); font-size:34px; letter-spacing:.14em; color:v
     <div class="rec-sub">この端末のブラウザに保存されます</div>
     <div id="rec-body"></div>
     <div class="rec-btns">
-      <button class="rec-clear" id="btn-clear">記録をすべて消去する</button>
-      <button class="rec-back" id="btn-rec-back">トップに戻る</button>
+      <button class="rec-clear" id="btn-clear">記録をすべて消去する<span class="en-sub">Reset All Learning Records</span></button>
+      <button class="rec-back" id="btn-rec-back">トップに戻る<span class="en-sub">Back to Top</span></button>
     </div>
   </section>
 
@@ -1107,17 +1108,17 @@ ${cloudP(90,600,1.5,"#ffffff")}${cloudP(370,640,1.7,"#fdfaf2")}${cloudP(230,700,
 <rect x="-40" y="30" width="80" height="14" rx="4" fill="#c98d1b"/><rect x="-24" y="44" width="48" height="26" rx="4" fill="#f0b429"/>
 <circle cx="-20" cy="-16" r="5" fill="#fff" opacity=".8"/></g></svg>`];
 const SCORE_META=[
- {t:"墓場",title:"墓場からの出発",msg:"……ここから登っていくしかない。基本の読みから、もう一度。",bgm:"gloom",tier:0},
- {t:"廃墟",title:"廃墟にひとり",msg:"崩れた壁も、積み直せば家になる。復習あるのみ。",bgm:"gloom",tier:0},
- {t:"スラム",title:"路地裏の下積み",msg:"まだ灯りは小さい。似た読みのひっかけに注意しよう。",bgm:"gloom",tier:0},
- {t:"ボロ小屋",title:"雨漏りの小屋",msg:"屋根はボロでも、机はある。解説を読み返して次へ。",bgm:"gloom",tier:0},
- {t:"町外れ",title:"町外れの一軒家",msg:"半分近く読めている。濁点・長音を意識すれば伸びる。",bgm:"mild",tier:1},
- {t:"住宅街",title:"普通の住宅街",msg:"ちょうど半分。合格ラインはもう見えている。",bgm:"mild",tier:1},
- {t:"オフィス街",title:"オフィス街デビュー",msg:"実力は十分。取りこぼした問題だけ復習しよう。",bgm:"mild",tier:1},
- {t:"表彰会場",title:"表彰台に立つ",msg:"見事な成績！ 会場から拍手が送られている。",bgm:"festive",tier:2},
- {t:"豪華ホテル",title:"祝賀パーティー",msg:"シャンデリアの下で乾杯。あと一歩で頂点だ。",bgm:"festive",tier:2},
- {t:"王宮",title:"王宮に招かれる",msg:"惜しくも満点ならず。それでも王座は目の前に。",bgm:"grand",tier:3},
- {t:"雲の上の神殿",title:"チャンピオン！",msg:"満点達成！ 黄金の光と虹があなたを祝福している。",bgm:"heaven",tier:4}];
+ {t:"墓場",title:"墓場からの出発",msg:"There's nowhere to go but up. Start again from the basic readings.",bgm:"gloom",tier:0},
+ {t:"廃墟",title:"廃墟にひとり",msg:"Even fallen walls can be rebuilt into a home. Keep reviewing.",bgm:"gloom",tier:0},
+ {t:"スラム",title:"路地裏の下積み",msg:"The light is still faint. Watch out for similar-sounding tricks.",bgm:"gloom",tier:0},
+ {t:"ボロ小屋",title:"雨漏りの小屋",msg:"The roof leaks, but the desk still stands. Reread the explanations and move on.",bgm:"gloom",tier:0},
+ {t:"町外れ",title:"町外れの一軒家",msg:"You can read nearly half. Focus on voiced sounds and long vowels to grow.",bgm:"mild",tier:1},
+ {t:"住宅街",title:"普通の住宅街",msg:"Exactly halfway. The passing line is already in sight.",bgm:"mild",tier:1},
+ {t:"オフィス街",title:"オフィス街デビュー",msg:"Your skills are solid. Just review the questions you missed.",bgm:"mild",tier:1},
+ {t:"表彰会場",title:"表彰台に立つ",msg:"An impressive result! The hall is applauding you.",bgm:"festive",tier:2},
+ {t:"豪華ホテル",title:"祝賀パーティー",msg:"A toast beneath the chandelier. One more step to the summit.",bgm:"festive",tier:2},
+ {t:"王宮",title:"王宮に招かれる",msg:"Just short of perfect. Yet the throne stands right before you.",bgm:"grand",tier:3},
+ {t:"雲の上の神殿",title:"チャンピオン！",msg:"Perfect score! Golden light and a rainbow celebrate your triumph.",bgm:"heaven",tier:4}];
 /* ============================================================
    結果演出（雨・霧・カラス／紙吹雪・旗／花火・スポットライト／
    黄金の光・王冠 など、点数帯ごとに切替）
@@ -1227,10 +1228,10 @@ function updateWeakBtn(){
  const n=weakPool().length, b=$("btn-weak");
  if(n>=WEAK_UNLOCK){
    b.disabled=false;
-   b.innerHTML=`苦手問題に挑戦<span class="mode-hint">これまでに間違えた ${n}問 から出題（間違いが多い問題ほど出やすい）</span>`;
+   b.innerHTML=`苦手問題に挑戦<span class="en-sub">Weak Question Challenge</span><span class="mode-hint">これまでに間違えた ${n}問 から出題（間違いが多い問題ほど出やすい）</span>`;
  }else{
    b.disabled=true;
-   b.innerHTML=`苦手問題に挑戦（あと${WEAK_UNLOCK-n}問で解放）<span class="mode-hint">間違えた問題が${WEAK_UNLOCK}問たまると挑戦できます（現在 ${n}問）</span>`;
+   b.innerHTML=`苦手問題に挑戦（あと${WEAK_UNLOCK-n}問で解放）<span class="en-sub">Weak Question Challenge (${WEAK_UNLOCK-n} more to unlock)</span><span class="mode-hint">間違えた問題が${WEAK_UNLOCK}問たまると挑戦できます（現在 ${n}問）</span>`;
  }
 }
 function showStart(){updateWeakBtn(); show("scr-start");}
@@ -1367,7 +1368,9 @@ function showResult(){
  $("r-score").textContent=s;
  $("r-title").textContent=meta.title;
  $("r-msg").textContent=meta.msg;
- $("btn-retry").textContent=G.mode==="weak"?"リトライ（苦手問題にもう一度挑戦）":"リトライ（同じレベルに再挑戦）";
+ $("btn-retry").innerHTML=G.mode==="weak"
+   ?`リトライ（苦手問題にもう一度挑戦）<span class="en-sub">Retry (weak questions again)</span>`
+   :`リトライ（同じレベルに再挑戦）<span class="en-sub">Retry (same level)</span>`;
  applyResultFx(s);
  show("scr-result");
  Snd.stopBGM();
@@ -1432,12 +1435,14 @@ function renderRecords(){
  body.innerHTML=h;
 }
 let clearArmed=false;
+const CLEAR_LABEL=`記録をすべて消去する<span class="en-sub">Reset All Learning Records</span>`;
+const CLEAR_CONFIRM=`もう一度押すと本当に消去します<span class="en-sub">Press again to confirm reset</span>`;
 $("btn-clear").onclick=()=>{Snd.tap();
- if(!clearArmed){clearArmed=true;$("btn-clear").textContent="もう一度押すと本当に消去します";
-   setTimeout(()=>{clearArmed=false;$("btn-clear").textContent="記録をすべて消去する";},4000);
+ if(!clearArmed){clearArmed=true;$("btn-clear").innerHTML=CLEAR_CONFIRM;
+   setTimeout(()=>{clearArmed=false;$("btn-clear").innerHTML=CLEAR_LABEL;},4000);
    return;}
  STATS={history:{},q:{}}; saveStats();
- clearArmed=false; $("btn-clear").textContent="記録をすべて消去する";
+ clearArmed=false; $("btn-clear").innerHTML=CLEAR_LABEL;
  renderRecords();
 };
 $("btn-rec-back").onclick=()=>{Snd.tap();showStart();};

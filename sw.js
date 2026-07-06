@@ -1,5 +1,5 @@
 /* 漢字の径 Service Worker: 初回表示後はオフラインでも起動できます */
-const CACHE = "kanji-no-michi-v2";
+const CACHE = "kanji-no-michi-v3";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
                 "./icon-180.png", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
 self.addEventListener("install", e => {
