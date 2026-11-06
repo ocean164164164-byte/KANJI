@@ -1,5 +1,5 @@
 /* 漢字の径 Service Worker: 初回表示後はオフラインでも起動できます */
-const CACHE = "kanji-no-michi-v3";
+const CACHE = "kanji-no-michi-v4";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
                 "./icon-180.png", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
 self.addEventListener("install", e => {
@@ -11,5 +11,6 @@ self.addEventListener("activate", e => {
   ).then(() => self.clients.claim()));
 });
 self.addEventListener("fetch", e => {
+  if (new URL(e.request.url).origin !== self.location.origin) return; /* 外部への通信（利用者数の計測など）は素通し */
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });

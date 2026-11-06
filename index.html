@@ -1452,5 +1452,38 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
   navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
 </script>
+<!-- 利用者数の計測（GoatCounter：匿名・Cookieなし） -->
+<script data-goatcounter="https://kanjinomichi.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<script>
+(function () {
+  /* GoatCounterの読み込みを待ってイベントを送る（最大10回まで再試行） */
+  function send(name, title, onSent, tries) {
+    tries = tries || 0;
+    if (window.goatcounter && window.goatcounter.count) {
+      try { window.goatcounter.count({ path: name, title: title, event: true }); } catch (e) { return; }
+      if (onSent) onSent();
+    } else if (tries < 10) {
+      setTimeout(function () { send(name, title, onSent, tries + 1); }, 1000);
+    }
+  }
+  /* ① この端末で初めて開いたときだけ1回（累計の導入端末数） */
+  try {
+    if (!localStorage.getItem("kn_first_open")) {
+      send("first-open", "初回起動", function () {
+        try { localStorage.setItem("kn_first_open", "1"); } catch (e) {}
+      });
+    }
+  } catch (e) {}
+  /* ② ホーム画面に追加された瞬間（Android・PCのChrome/Edge） */
+  window.addEventListener("appinstalled", function () {
+    send("pwa-installed", "PWAインストール");
+  });
+  /* ③ ホーム画面のアイコンから起動されたとき（iPhoneも判定可） */
+  var standalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+                   || window.navigator.standalone === true;
+  if (standalone) send("standalone-launch", "ホーム画面から起動");
+})();
+</script>
 </body>
 </html>
